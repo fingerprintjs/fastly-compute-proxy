@@ -8,8 +8,8 @@
 </a>
 </p>
 <p align="center">
-<a href="https://github.com/fingerprintjs/fingerprint-pro-fastly-compute-proxy-integration"><img src="https://img.shields.io/github/v/release/fingerprintjs/fingerprint-pro-fastly-compute-proxy-integration" alt="Current version"></a>
-<a href="https://fingerprintjs.github.io/fingerprint-pro-fastly-compute-proxy-integration/"><img src="https://raw.githubusercontent.com/fingerprintjs/fingerprint-pro-fastly-compute-proxy-integration/gh-pages/badges.svg" alt="coverage"></a>
+<a href="https://github.com/fingerprintjs/fastly-compute-proxy"><img src="https://img.shields.io/github/v/release/fingerprintjs/fastly-compute-proxy" alt="Current version"></a>
+<a href="https://fingerprintjs.github.io/fastly-compute-proxy/"><img src="https://raw.githubusercontent.com/fingerprintjs/fastly-compute-proxy/gh-pages/badges.svg" alt="coverage"></a>
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/:license-mit-blue.svg" alt="MIT license"></a>
 <a href="https://discord.gg/39EpE2neBg"><img src="https://img.shields.io/discord/852099967190433792?style=logo&label=Discord&logo=Discord&logoColor=white" alt="Discord server"></a>
 </p>
@@ -50,7 +50,7 @@ This is a quick overview of the installation setup. For detailed step-by-step in
    | ------------ | -------------------- | --------------------------------------------- |
    | PROXY_SECRET | 6XI9CLf3C9oHSB12TTaI | Fingerprint proxy secret generated in Step 1. |
 
-5. Go to [Releases](https://github.com/fingerprintjs/fingerprint-pro-fastly-compute-proxy-integration/releases) to download the latest `fingerprint-proxy-integration.tar.gz` package file.
+5. Go to [Releases](https://github.com/fingerprintjs/fastly-compute-proxy/releases) to download the latest `fingerprint-proxy-integration.tar.gz` package file.
 6. Upload package to your Fastly Compute Service's **Package**.
 7. Configure the Fingerprint [JavaScript Agent](https://dev.fingerprint.com/docs/install-the-javascript-agent#configuring-the-agent) on your website using the paths defined in Step 3.
     ```javascript
