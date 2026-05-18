@@ -1,17 +1,18 @@
-import { addTrafficMonitoringSearchParamsForProCDN, createFallbackErrorResponse, getAgentScriptPath } from '../utils'
+import { createFallbackErrorResponse, getAgentScriptPath } from '../utils'
 import { CacheOverride } from 'fastly:cache-override'
+import { getIngressBackendByRegion } from '../utils/getIngressBackendByRegion'
 
 function makeDownloadScriptRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
   url.pathname = getAgentScriptPath(url.searchParams)
-  addTrafficMonitoringSearchParamsForProCDN(url)
 
   const newRequest = new Request(url.toString(), request as RequestInit)
   newRequest.headers.delete('Cookie')
 
-  console.log(`Downloading script from cdnEndpoint ${url.toString()}...`)
-  const cache = new CacheOverride('override', { ttl: 60 }) // Caches sub-request by 60 seconds for agent download script
-  return fetch(newRequest, { backend: 'fpcdn.io', cacheOverride: cache })
+  const backend = getIngressBackendByRegion(url)
+  console.log(`Downloading script from ${backend} ${url.toString()}...`)
+  const cache = new CacheOverride('override', { ttl: 60 })
+  return fetch(newRequest, { backend, cacheOverride: cache })
 }
 
 export async function handleDownloadScript(request: Request): Promise<Response> {

@@ -2,7 +2,6 @@ import { beforeAll, beforeEach, describe, expect } from '@jest/globals'
 import { ConfigStore } from 'fastly:config-store'
 import { makeRequest } from '../utils/makeRequest'
 import { handleRequest } from '../../src'
-import packageJson from '../../package.json'
 
 describe('Download Script', () => {
   let receivedUrl: string
@@ -32,7 +31,7 @@ describe('Download Script', () => {
     await handleRequest(request)
 
     const url = new URL(receivedUrl)
-    expect(url.pathname).toBe('/v3/apiKey')
+    expect(url.pathname).toBe('/web/v3/apiKey')
   })
 
   it('should set pathname to agentScriptPath with loaderVersion', async () => {
@@ -40,31 +39,15 @@ describe('Download Script', () => {
     await handleRequest(request)
 
     const url = new URL(receivedUrl)
-    expect(url.pathname).toBe('/v3/apiKey/loader_v3.2.1.js')
+    expect(url.pathname).toBe('/web/v3/apiKey/loader_v3.2.1.js')
   })
 
-  it('should add traffic monitoring', async () => {
-    const request = makeRequest(new URL('https://test/download'))
+  it('should not add traffic monitoring', async () => {
+    const request = makeRequest(new URL('https://test/download?apiKey=apiKey'))
     await handleRequest(request)
 
     const url = new URL(receivedUrl)
-    const trafficMonitoringParam = url.searchParams.get('ii')
-    const [integration, version, type] = trafficMonitoringParam?.split('/') ?? []
-
-    expect(integration).toBe('fingerprint-pro-fastly-compute')
-    expect(version).toBe(packageJson.version)
-    expect(type).toBe('procdn')
-  })
-
-  it('should append when multiple traffic monitoring params', async () => {
-    const request = makeRequest(new URL('https://test/download?ii=fingerprintjs-pro-react/v1.2.3'))
-    await handleRequest(request)
-
-    const url = new URL(receivedUrl)
-    const iiValues = url.searchParams.getAll('ii')
-    expect(iiValues.length).toBe(2)
-    expect(iiValues[0]).toBe('fingerprintjs-pro-react/v1.2.3')
-    expect(iiValues[1]).toBe(`fingerprint-pro-fastly-compute/${packageJson.version}/procdn`)
+    expect(url.searchParams.has('ii')).toBe(false)
   })
 
   it('should delete cookie header', async () => {
@@ -74,15 +57,39 @@ describe('Download Script', () => {
     expect(requestHeaders.has('Cookie')).toBe(false)
   })
 
-  it('should send request to fpcdn backend', async () => {
+  it('should send request to API backend', async () => {
     const request = makeRequest(new URL('https://test/download'))
     await handleRequest(request)
 
     expect(fetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        backend: 'fpcdn.io',
+        backend: 'api.fpjs.io',
         cacheOverride: expect.objectContaining({ mode: 'override', options: { ttl: 60 } }),
+      })
+    )
+  })
+
+  it('should send request to EU backend when region=eu', async () => {
+    const request = makeRequest(new URL('https://test/download?region=eu'))
+    await handleRequest(request)
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        backend: 'eu.api.fpjs.io',
+      })
+    )
+  })
+
+  it('should send request to AP backend when region=ap', async () => {
+    const request = makeRequest(new URL('https://test/download?region=ap'))
+    await handleRequest(request)
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        backend: 'ap.api.fpjs.io',
       })
     )
   })
