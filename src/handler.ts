@@ -1,6 +1,14 @@
-import { getScriptDownloadPath, getGetResultPath, IntegrationEnv, getStatusPagePath } from './env'
+import {
+  getScriptDownloadPath,
+  getGetResultPath,
+  IntegrationEnv,
+  getStatusPagePath,
+  isScriptDownloadPathSet,
+  isGetResultPathSet,
+} from './env'
 
 import { handleDownloadScript, handleIngressAPI, handleStatusPage } from './handlers'
+import { handleApiRequest } from './handlers/handleApiRequest'
 import { createRoute } from './utils'
 
 export type Route = {
@@ -14,34 +22,27 @@ export type Route = {
 
 function createRoutes(env: IntegrationEnv): Route[] {
   const routes: Route[] = []
-  const downloadScriptRoute: Route = {
-    pathPattern: createRoute(getScriptDownloadPath(env)),
-    handler: handleDownloadScript,
+
+  if (isScriptDownloadPathSet(env)) {
+    routes.push({
+      pathPattern: createRoute(getScriptDownloadPath(env)),
+      handler: handleDownloadScript,
+    })
   }
-  const ingressAPIRoute: Route = {
-    pathPattern: createRoute(getGetResultPath(env)),
-    handler: handleIngressAPI,
+
+  if (isGetResultPathSet(env)) {
+    routes.push({
+      pathPattern: createRoute(getGetResultPath(env)),
+      handler: handleIngressAPI,
+    })
   }
-  const statusRoute: Route = {
+
+  routes.push({
     pathPattern: createRoute(getStatusPagePath()),
     handler: (request, env) => handleStatusPage(request, env),
-  }
-  routes.push(downloadScriptRoute)
-  routes.push(ingressAPIRoute)
-  routes.push(statusRoute)
+  })
 
   return routes
-}
-
-function handleNoMatch(urlPathname: string): Response {
-  const responseHeaders = new Headers({
-    'content-type': 'application/json',
-  })
-
-  return new Response(JSON.stringify({ error: `unmatched path ${urlPathname}` }), {
-    status: 404,
-    headers: responseHeaders,
-  })
 }
 
 export function handleRequestWithRoutes(
@@ -57,7 +58,7 @@ export function handleRequestWithRoutes(
     }
   }
 
-  return handleNoMatch(url.pathname)
+  return handleApiRequest(request, env, url.pathname)
 }
 
 export async function handleReq(request: Request, env: IntegrationEnv): Promise<Response> {

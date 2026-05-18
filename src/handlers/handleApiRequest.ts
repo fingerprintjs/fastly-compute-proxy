@@ -10,9 +10,31 @@ import { processOpenClientResponse } from '../utils/processOpenClientResponse'
 import { cloneFastlyResponse } from '../utils/cloneFastlyResponse'
 import { getIngressBackendByRegion } from '../utils/getIngressBackendByRegion'
 import { CacheOverride } from 'fastly:cache-override'
+import { getCacheControlHeaderWithMaxAgeIfLower } from '../utils/getCacheControlHeaderWithMaxAgeIfLower'
 
 function isMethodAuthorized(method: string): boolean {
   return method === 'POST'
+}
+
+function modifyResponseIfNecessary(originResponse: Response): Response {
+  const contentType = originResponse.headers.get('Content-Type')
+  if (contentType == null || !contentType.trimStart().startsWith('text/javascript')) {
+    return originResponse
+  }
+
+  const oldCacheControlHeader = originResponse.headers.get('cache-control')
+  if (!oldCacheControlHeader) {
+    return originResponse
+  }
+
+  const maxMaxAge = 60 * 60 // 1 hour for browsers
+  const maxSMaxAge = 60 // 1 minute for edge
+  const response = new Response(originResponse.body, originResponse)
+  response.headers.set(
+    'cache-control',
+    getCacheControlHeaderWithMaxAgeIfLower(oldCacheControlHeader, maxMaxAge, maxSMaxAge)
+  )
+  return response
 }
 
 async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationEnv, url: URL): Promise<Response> {
@@ -65,7 +87,9 @@ function makeUnauthorizedRequest(receivedRequest: Request, url: URL): Promise<Re
   request.headers.delete('Cookie')
 
   console.log(`sending cache request to ${url}...`)
-  return fetch(request, { backend: getIngressBackendByRegion(url), cacheOverride: new CacheOverride('pass') })
+  return fetch(request, { backend: getIngressBackendByRegion(url), cacheOverride: new CacheOverride('pass') }).then(
+    modifyResponseIfNecessary
+  )
 }
 
 export async function handleApiRequest(request: Request, env: IntegrationEnv, pathname: string): Promise<Response> {
