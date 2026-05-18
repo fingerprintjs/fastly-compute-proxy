@@ -84,12 +84,8 @@ describe('Status Page', () => {
     const response = await handleRequest(request)
 
     const responseText = await response.text()
-    expect(responseText).toContain(
-      '<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Required) is missing ❌. Your integration is not working correctly.</li>'
-    )
-    expect(responseText).toContain(
-      '<li><code>GET_RESULT_PATH</code> (Required) is missing ❌. Your integration is not working correctly.</li>'
-    )
+    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Optional) is not set ⚠️. </li>')
+    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Optional) is not set ⚠️. </li>')
     expect(responseText).toContain(
       '<li><code>PROXY_SECRET</code> (Required) is missing ❌. Your integration is not working correctly.</li>'
     )
@@ -117,8 +113,8 @@ describe('Status Page', () => {
 
     const responseText = await response.text()
 
-    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Required) is set ✅. </li>')
-    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Required) is set ✅. </li>')
+    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Optional) is set ✅. </li>')
+    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Optional) is set ✅. </li>')
     expect(responseText).toContain('<li><code>PROXY_SECRET</code> (Required) is set ✅. </li>')
 
     expect(responseText).toContain(
@@ -168,8 +164,8 @@ describe('Status Page Error Cases', () => {
     const responseText = await response.text()
 
     expect(responseText).toContain('Your integration is not working correctly')
-    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Required) is missing ❌')
-    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Required) is missing ❌')
+    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Optional) is not set ⚠️')
+    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Optional) is not set ⚠️')
   })
 
   it('should show error when secret store value is not set', async () => {
@@ -247,13 +243,6 @@ describe('Status Page Error Cases', () => {
 describe('Status page Backend Tests', () => {
   beforeEach(() => {
     jest.resetAllMocks()
-  })
-
-  it('should show warning when fpcdn.io backend is missing', () => {
-    jest.spyOn(Backend, 'exists').mockImplementation((backend) => backend !== 'fpcdn.io')
-
-    const result = getBackendsInformation()
-    expect(result).toContain('⚠️ Your integration is missing "fpcdn.io" backend host.')
   })
 
   it('should show warning when all region backends are missing', () => {
@@ -334,18 +323,6 @@ describe('Status page Backend Tests', () => {
     const result = getBackendsInformation()
     expect(result).toContain(
       'Integration is configured for these <a href="https://dev.fingerprint.com/docs/regions">regions</a>: <strong>US, EU, AP</strong>'
-    )
-  })
-
-  it('should show fpcdn.io warning and region information when applicable', () => {
-    jest
-      .spyOn(Backend, 'exists')
-      .mockImplementation((backend) => backend === 'api.fpjs.io' || backend === 'eu.api.fpjs.io')
-
-    const result = getBackendsInformation()
-    expect(result).toContain('⚠️ Your integration is missing "fpcdn.io" backend host.')
-    expect(result).toContain(
-      'Integration is configured for these <a href="https://dev.fingerprint.com/docs/regions">regions</a>: <strong>US, EU</strong>'
     )
   })
 })

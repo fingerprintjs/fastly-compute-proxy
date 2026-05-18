@@ -63,9 +63,6 @@ function createVersionElement(): string {
 
 export function getBackendsInformation(): string {
   let information = ''
-  if (!Backend.exists('fpcdn.io')) {
-    information += '<li>⚠️ Your integration is missing "fpcdn.io" backend host.</li>'
-  }
 
   const usResultBackend = Backend.exists('api.fpjs.io')
   const euResultBackend = Backend.exists('eu.api.fpjs.io')
@@ -149,19 +146,7 @@ type ConfigurationStatus = {
 }
 function createEnvVarsInformationElement(env: IntegrationEnv): string {
   const incorrectConfigurationMessage = 'Your integration is not working correctly.'
-  const configurations: ConfigurationStatus[] = [
-    {
-      label: agentScriptDownloadPathVarName,
-      isSet: isScriptDownloadPathSet(env),
-      required: true,
-      message: incorrectConfigurationMessage,
-    },
-    {
-      label: getResultPathVarName,
-      isSet: isGetResultPathSet(env),
-      required: true,
-      message: incorrectConfigurationMessage,
-    },
+  const requiredConfigurations: ConfigurationStatus[] = [
     {
       label: proxySecretVarName,
       isSet: isProxySecretSet(env),
@@ -170,11 +155,34 @@ function createEnvVarsInformationElement(env: IntegrationEnv): string {
     },
   ]
 
-  let result = ''
-  result += '<p>🛠️ Your integration’s configuration values:</p>'
+  const v3Configurations: ConfigurationStatus[] = [
+    {
+      label: agentScriptDownloadPathVarName,
+      isSet: isScriptDownloadPathSet(env),
+      required: false,
+    },
+    {
+      label: getResultPathVarName,
+      isSet: isGetResultPathSet(env),
+      required: false,
+    },
+  ]
 
+  let result = ''
+
+  result += '<p>🛠️ Required configuration values:</p>'
   result += '<ul>'
-  for (const config of configurations) {
+  for (const config of requiredConfigurations) {
+    result += buildConfigurationMessage(config, env)
+  }
+  result += '</ul>'
+
+  result += '<p>🛠️ V3 API configuration values:</p>'
+  if (!isScriptDownloadPathSet(env) || !isGetResultPathSet(env)) {
+    result += '<p>⚠️ If you are not using the V3 API, these warnings can be safely ignored.</p>'
+  }
+  result += '<ul>'
+  for (const config of v3Configurations) {
     result += buildConfigurationMessage(config, env)
   }
   result += '</ul>'
