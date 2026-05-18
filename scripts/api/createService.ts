@@ -8,7 +8,7 @@ export async function createService(domain: string) {
   const client = createClient('service')
   try {
     const searchResponse = await client.searchService({ name: domain })
-    if (searchResponse && searchResponse.id) {
+    if (searchResponse != null && searchResponse.id != null) {
       return client.getServiceDetail({ service_id: searchResponse.id })
     }
   } catch (e) {
@@ -180,15 +180,6 @@ async function createBackends(service_id: string, version_id: number) {
     address: process.env.FPJS_BACKEND_URL ? `ap.${process.env.FPJS_BACKEND_URL}` : 'ap.api.fpjs.io',
     override_host: process.env.FPJS_BACKEND_URL ? `ap.${process.env.FPJS_BACKEND_URL}` : 'ap.api.fpjs.io',
     name: 'ap.api.fpjs.io',
-    port: 443,
-    ssl_check_cert: false,
-  })
-  await client.createBackend({
-    service_id,
-    version_id,
-    address: process.env.FPCDN_URL ?? 'fpcdn.io',
-    override_host: process.env.FPCDN_URL ?? 'fpcdn.io',
-    name: 'fpcdn.io',
     port: 443,
     ssl_check_cert: false,
   })
