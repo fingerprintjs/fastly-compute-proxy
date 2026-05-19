@@ -2,7 +2,7 @@
 # https://www.fastly.com/documentation/reference/compute/fastly-toml/
 
 authors = ["support@fingerprint.com"]
-cloned_from = "https://github.com/fingerprintjs/fingerprint-pro-fastly-compute-proxy-integration"
+cloned_from = "https://github.com/fingerprintjs/fastly-compute-proxy"
 description = "Fingerprint Proxy Fastly Compute Package"
 language = "javascript"
 manifest_version = 3
