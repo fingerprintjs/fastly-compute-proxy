@@ -50,7 +50,7 @@ This is a quick overview of the installation setup. For detailed step-by-step in
    | ------------ | -------------------- | --------------------------------------------- |
    | PROXY_SECRET | 6XI9CLf3C9oHSB12TTaI | Fingerprint proxy secret generated in Step 1. |
 
-5. Go to [Releases](https://github.com/fingerprintjs/fastly-compute-proxy/releases) to download the latest `fingerprint-proxy-integration.tar.gz` package file.
+5. Go to [Releases](https://github.com/fingerprintjs/fastly-compute-proxy/releases) to download the latest `fingerprint-fastly-compute-proxy-integration.tar.gz` package file.
 6. Upload package to your Fastly Compute Service's **Package**.
 7. Configure the Fingerprint [JavaScript Agent](https://dev.fingerprint.com/docs/install-the-javascript-agent#configuring-the-agent) on your website using the paths defined in Step 3.
     ```javascript
