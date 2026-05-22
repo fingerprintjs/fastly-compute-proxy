@@ -17,7 +17,9 @@ function isMethodAuthorized(method: string): boolean {
 
 async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationEnv, url: URL): Promise<Response> {
   if (!isProxySecretSet(env)) {
-    console.log("PROXY_SECRET is not set in the integration's Secret store, your integration is not working correctly.")
+    console.warn(
+      "PROXY_SECRET is not set in the integration's Secret store, your integration is not working correctly."
+    )
   }
 
   addTrafficMonitoringSearchParamsForVisitorIdRequest(url)
