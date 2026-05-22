@@ -1,5 +1,5 @@
 {
-  "name": "fingerprint-pro-fastly-compute-proxy-integration",
+  "name": "fingerprint-fastly-compute-proxy-integration",
   "version": "0.3.1",
   "private": true,
   "engines": {
