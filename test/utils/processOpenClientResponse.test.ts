@@ -76,7 +76,7 @@ describe('processOpenClientResponse', () => {
     jest.mocked(cloneFastlyResponse).mockReturnValue(new Response('cloned'))
   })
 
-  it('should process valid response and call plugins', async () => {
+  it('should process valid response with sealedResult and call plugins', async () => {
     const bodyBytes = new TextEncoder().encode(JSON.stringify({ sealedResult: 'mockSealedResult' }))
 
     await processOpenClientResponse(bodyBytes, mockResponse, mockEnv)
@@ -87,6 +87,32 @@ describe('processOpenClientResponse', () => {
     expect(plugins[0].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
     expect(plugins[1].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
     expect(plugins[2].callback).not.toHaveBeenCalled()
+  })
+
+  it('should process valid response with sealed_result (snake_case) and call plugins', async () => {
+    const bodyBytes = new TextEncoder().encode(JSON.stringify({ sealed_result: 'mockSealedResult' }))
+
+    await processOpenClientResponse(bodyBytes, mockResponse, mockEnv)
+
+    expect(unsealData).toHaveBeenCalledWith('mockSealedResult', mockDecryptionKey)
+    expect(plugins[0].callback).toHaveBeenCalled()
+    expect(plugins[1].callback).toHaveBeenCalled()
+  })
+
+  it('should throw error when sealed_result is null', async () => {
+    const bodyBytes = new TextEncoder().encode(JSON.stringify({ sealed_result: null }))
+
+    await expect(processOpenClientResponse(bodyBytes, mockResponse, mockEnv)).rejects.toThrow(
+      'Sealed result is not enabled for this subscription'
+    )
+  })
+
+  it('should throw error when sealed result key is missing', async () => {
+    const bodyBytes = new TextEncoder().encode(JSON.stringify({ otherField: 'value' }))
+
+    await expect(processOpenClientResponse(bodyBytes, mockResponse, mockEnv)).rejects.toThrow(
+      'Sealed result is not enabled for this subscription'
+    )
   })
 
   it('should handle invalid JSON in response body', async () => {

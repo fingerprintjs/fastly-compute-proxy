@@ -1,10 +1,12 @@
 import { plugins } from './registerPlugin'
 import { unsealData } from './unsealData'
 import { cloneFastlyResponse } from './cloneFastlyResponse'
+import { decompressBody } from './decompressBody'
 import { getDecryptionKey, IntegrationEnv } from '../env'
 
 type FingerprintSealedIngressResponseBody = {
-  sealedResult: string
+  sealedResult?: string | null
+  sealed_result?: string | null
 }
 
 export async function processOpenClientResponse(
@@ -14,9 +16,10 @@ export async function processOpenClientResponse(
 ): Promise<void> {
   let responseBody: string | null = null
   try {
-    responseBody = new TextDecoder('utf-8').decode(bodyBytes)
+    const contentEncoding = response.headers.get('content-encoding')
+    responseBody = decompressBody(bodyBytes, contentEncoding)
   } catch (e) {
-    console.log(`Error occurred when decoding response to UTF-8: ${e}.`)
+    console.log(`Error occurred when decoding response body: ${e}.`)
   }
 
   if (responseBody == null) {
@@ -35,7 +38,11 @@ export async function processOpenClientResponse(
     console.log(`Error parsing response body as JSON: ${e}`)
     return
   }
-  const event = unsealData(parsedText.sealedResult, decryptionKey)
+  const sealedResult = parsedText.sealedResult ?? parsedText.sealed_result
+  if (!sealedResult) {
+    throw new Error('Sealed result is not enabled for this subscription')
+  }
+  const event = unsealData(sealedResult, decryptionKey)
   const filteredPlugins = plugins.filter((t) => t.type === 'processOpenClientResponse')
   for (const filteredPlugin of filteredPlugins) {
     try {
