@@ -4,6 +4,7 @@ import { SecretStore } from 'fastly:secret-store'
 import { makeRequest } from '../utils/makeRequest'
 import { handleRequest } from '../../src'
 import cookie from 'cookie'
+import packageJson from '../../package.json'
 
 describe('Catch-all (V4)', () => {
   let receivedUrl: string
@@ -57,6 +58,14 @@ describe('Catch-all (V4)', () => {
       expect(requestHeaders.has('Cookie')).toBe(false)
     })
 
+    it('should not include ii parameter', async () => {
+      const request = makeRequest(new URL('https://test/web/v4/abc123'))
+      await handleRequest(request)
+
+      const url = new URL(receivedUrl)
+      expect(url.searchParams.has('ii')).toBe(false)
+    })
+
     it('should forward to EU backend when region=eu', async () => {
       const request = makeRequest(new URL('https://test/web/v4/abc123?region=eu'))
       await handleRequest(request)
@@ -104,6 +113,14 @@ describe('Catch-all (V4)', () => {
       expect(requestHeaders.has('Cookie')).toBe(true)
       expect(cookieValue['hello']).toBe(undefined)
       expect(cookieValue['_iidt']).toBe('test')
+    })
+
+    it('should include ii parameter', async () => {
+      const request = makeRequest(new URL('https://test/some/path'), { method: 'POST' })
+      await handleRequest(request)
+
+      const url = new URL(receivedUrl)
+      expect(url.searchParams.get('ii')).toBe(`fingerprint-pro-fastly-compute/${packageJson.version}/ingress`)
     })
 
     it('should add proxy integration headers', async () => {
