@@ -14,14 +14,15 @@ export async function processSealedResultResponse(
   response: Response,
   env: IntegrationEnv
 ): Promise<void> {
-  const decryptionKey = getDecryptionKey(env)
-  if (!decryptionKey) {
-    throw new Error('Decryption key not found in secret store')
-  }
   const typedBody = parsedBody as unknown as FingerprintSealedIngressResponseBody
   const sealedResult = typedBody.sealedResult ?? typedBody.sealed_result
   if (!sealedResult) {
-    throw new Error('Sealed result is not enabled for this subscription')
+    return
+  }
+
+  const decryptionKey = getDecryptionKey(env)
+  if (!decryptionKey) {
+    throw new Error('Decryption key not found in secret store')
   }
   const event = unsealData(sealedResult, decryptionKey)
   const filteredPlugins = plugins.filter((t) => t.type === 'processSealedResult')
