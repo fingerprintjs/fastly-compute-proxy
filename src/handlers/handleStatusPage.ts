@@ -199,10 +199,14 @@ function createEnvVarsInformationElement(env: IntegrationEnv): string {
 }
 
 function isUsingDeprecatedSaveToKvStoreKey(): boolean {
-  const configStore = getConfigStore()
-  const hasNewKey = configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) != null
-  const hasOldKey = configStore?.get(saveToKvStorePluginEnabledVarName) != null
-  return !hasNewKey && hasOldKey
+  try {
+    const configStore = getConfigStore()
+    const hasNewKey = configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) != null
+    const hasOldKey = configStore?.get(saveToKvStorePluginEnabledVarName) != null
+    return !hasNewKey && hasOldKey
+  } catch {
+    return false
+  }
 }
 
 async function createPluginConfigurationElement(env: IntegrationEnv): Promise<string> {
