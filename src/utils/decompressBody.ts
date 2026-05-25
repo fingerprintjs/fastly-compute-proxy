@@ -13,8 +13,15 @@ export function decompressBody(bodyBytes: ArrayBuffer, contentEncoding: string |
   }
 
   if (encoding === 'deflate') {
-    const decompressed = inflateRaw(new Uint8Array(bodyBytes))
-    return new TextDecoder('utf-8').decode(decompressed)
+    const compressed = new Uint8Array(bodyBytes)
+
+    try {
+      const decompressed = inflate(compressed)
+      return new TextDecoder('utf-8').decode(decompressed)
+    } catch {
+      const decompressed = inflateRaw(compressed)
+      return new TextDecoder('utf-8').decode(decompressed)
+    }
   }
 
   if (encoding === 'identity') {
