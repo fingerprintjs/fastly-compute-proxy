@@ -7,8 +7,11 @@ import {
 } from '../utils'
 import { getFilteredCookies } from '../utils/cookie'
 import { processOpenClientResponse } from '../utils/processOpenClientResponse'
+import { processSealedResultResponse } from '../utils/processSealedResultResponse'
+import { processIdentificationResponse } from '../utils/processIdentificationResponse'
 import { cloneFastlyResponse } from '../utils/cloneFastlyResponse'
 import { getIngressBackendByRegion } from '../utils/getIngressBackendByRegion'
+import { decompressBody } from '../utils/decompressBody'
 import { CacheOverride } from 'fastly:cache-override'
 
 function isMethodAuthorized(method: string): boolean {
@@ -37,11 +40,6 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
   console.log(`sending ingress request to ${url.toString()}...`)
   const response = await fetch(request, { backend: getIngressBackendByRegion(url) })
 
-  if (!isOpenClientResponseEnabled(env)) {
-    return response
-  }
-
-  console.log('Plugin system for Open Client Response is enabled')
   if (response.status < 200 || response.status > 299) {
     console.log(
       `Response status is non-successful (HTTP ${response.status}). Skipping plugins and returning the response.`
@@ -50,14 +48,37 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
   }
 
   const bodyBytes = await response.arrayBuffer()
-  Promise.resolve().then(() => {
-    processOpenClientResponse(bodyBytes, response, env).catch((e) =>
-      console.error(
-        'Failed to parse identification response. Make sure Open Client Response is enabled for your Fingerprint workspace: ',
-        e
+
+  let parsedBody: Record<string, unknown> | null = null
+  try {
+    const contentEncoding = response.headers.get('content-encoding')
+    const responseBody = decompressBody(bodyBytes, contentEncoding)
+    parsedBody = JSON.parse(responseBody)
+  } catch (e) {
+    console.log(`Error occurred when parsing response body: ${e}. Skipping plugins.`)
+  }
+
+  if (parsedBody) {
+    Promise.resolve().then(() => {
+      processIdentificationResponse(parsedBody, bodyBytes, response).catch((e) =>
+        console.error('Failed to process identification response plugins: ', e)
       )
-    )
-  })
+      processSealedResultResponse(parsedBody, bodyBytes, response, env).catch((e) =>
+        console.error(
+          'Make sure Decryption Key is added to Secret Store and its activated from Fingerprint workspace: ',
+          e
+        )
+      )
+      if (isOpenClientResponseEnabled(env)) {
+        processOpenClientResponse(parsedBody, bodyBytes, response, env).catch((e) =>
+          console.error(
+            'Make sure OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED is set to true in Config Store, Decryption Key is added to Secret Store, and Open Client Response is enabled for your Fingerprint workspace: ',
+            e
+          )
+        )
+      }
+    })
+  }
 
   return cloneFastlyResponse(bodyBytes, response)
 }

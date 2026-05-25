@@ -11,15 +11,19 @@ import {
   decryptionKeyVarName,
   isOpenClientResponseEnabled,
   isDecryptionKeySet,
+  saveSealedResultToKvStorePluginEnabledVarName,
   saveToKvStorePluginEnabledVarName,
-  isSaveToKvStorePluginEnabled,
-  isSaveToKvStorePluginEnabledSet,
+  isSaveSealedResultToKvStorePluginEnabled,
+  isSaveSealedResultToKvStorePluginEnabledSet,
+  saveEventToKvStorePluginEnabledVarName,
+  isSaveEventToKvStorePluginEnabled,
+  isSaveEventToKvStorePluginEnabledSet,
   getDecryptionKey,
   checkKVStoreAvailability,
 } from '../env'
 import packageJson from '../../package.json'
 import { env } from 'fastly:env'
-import { getNamesForStores } from '../utils/getStore'
+import { getConfigStore, getNamesForStores } from '../utils/getStore'
 import { Backend } from 'fastly:backend'
 
 function generateNonce() {
@@ -88,19 +92,16 @@ export function getBackendsInformation(): string {
 }
 
 function isValidBase64(str: string | null | undefined): boolean {
-  // Check if the string matches the base64 pattern
   const base64Pattern = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
   if (!str) {
     return false
   }
 
-  // Validate the string length (should be a multiple of 4)
   if (str.length % 4 !== 0) {
     return false
   }
 
-  // Test against the Base64 pattern
   return base64Pattern.test(str)
 }
 
@@ -112,69 +113,63 @@ function createContactInformationElement(): string {
   `
 }
 
-function buildConfigurationMessage(config: ConfigurationStatus, env: IntegrationEnv): string {
-  const { isSet, label, required, value, showValue } = config
+function buildConfigurationItem(
+  label: string,
+  options: {
+    isSet: boolean
+    required: boolean
+    message?: string
+    value?: string | null
+    showValue?: boolean
+  },
+  env: IntegrationEnv
+): string {
+  const { isSet, required, value, showValue, message } = options
 
-  let message = isSet ? '' : config.message
-  if (label === decryptionKeyVarName && isSet) {
-    const isDecryptionKeyAValidBase64 = isValidBase64(getDecryptionKey(env))
-    if (!isDecryptionKeyAValidBase64) {
-      message += `Invalid value provided ⚠️. Please copy and paste the correct value from the dashboard.`
-    }
+  let statusText: string
+  if (isSet) {
+    const valueText = showValue === true ? `<code>${value}</code>` : 'set'
+    statusText = `${valueText} ✅`
+  } else if (required) {
+    statusText = 'missing ❌'
+  } else {
+    statusText = 'not set ⚠️'
   }
 
-  return `<li><code>${label}</code> (${required ? 'Required' : 'Optional'}) is ${isSet ? `${showValue === true ? `<code>${value}</code>` : 'set'} ✅` : `${required ? 'missing ❌' : 'not set ⚠️'}`}. ${message ?? ''}</li>`
+  let extraMessage = ''
+  if (!isSet && message) {
+    extraMessage = ` ${message}`
+  }
+  if (isSet && label === decryptionKeyVarName && !isValidBase64(getDecryptionKey(env))) {
+    extraMessage = ` Invalid value provided ⚠️. Please copy and paste the correct value from the dashboard.`
+  }
+
+  return `<li><code>${label}</code> (${required ? 'Required' : 'Optional'}) is ${statusText}.${extraMessage}</li>`
 }
 
-async function buildKVStoreCheckMessage(): Promise<string> {
-  const isKVStoreAvailable = await checkKVStoreAvailability()
+async function buildKVStoreCheckMessage(pluginVarName: string, kvStoreName: string): Promise<string> {
+  const isKVStoreAvailable = await checkKVStoreAvailability(kvStoreName)
   if (isKVStoreAvailable) {
     return ''
   }
 
-  const { kvStoreName } = getNamesForStores()
-  return `⚠️You have <code>${saveToKvStorePluginEnabledVarName}</code> enabled, but we couldn't reach your KVStore named <code>${kvStoreName}</code>. <code>${saveToKvStorePluginEnabledVarName}</code> related plugin is not working correctly.`
+  return `⚠️You have <code>${pluginVarName}</code> enabled, but we couldn't reach your KVStore named <code>${kvStoreName}</code>. <code>${pluginVarName}</code> related plugin is not working correctly.`
 }
 
-type ConfigurationStatus = {
-  label: string
-  isSet: boolean
-  required: boolean
-  message?: string
-  value?: string | null
-  showValue?: boolean
-}
 function createEnvVarsInformationElement(env: IntegrationEnv): string {
-  const incorrectConfigurationMessage = 'Your integration is not working correctly.'
-  const requiredConfigurations: ConfigurationStatus[] = [
-    {
-      label: proxySecretVarName,
-      isSet: isProxySecretSet(env),
-      required: true,
-      message: incorrectConfigurationMessage,
-    },
-  ]
-
-  const v3Configurations: ConfigurationStatus[] = [
-    {
-      label: agentScriptDownloadPathVarName,
-      isSet: isScriptDownloadPathSet(env),
-      required: false,
-    },
-    {
-      label: getResultPathVarName,
-      isSet: isGetResultPathSet(env),
-      required: false,
-    },
-  ]
-
   let result = ''
 
   result += '<p>🛠️ Required configuration values:</p>'
   result += '<ul>'
-  for (const config of requiredConfigurations) {
-    result += buildConfigurationMessage(config, env)
-  }
+  result += buildConfigurationItem(
+    proxySecretVarName,
+    {
+      isSet: isProxySecretSet(env),
+      required: true,
+      message: 'Your integration is not working correctly.',
+    },
+    env
+  )
   result += '</ul>'
 
   result += '<p>🛠️ V3 API configuration values:</p>'
@@ -182,50 +177,103 @@ function createEnvVarsInformationElement(env: IntegrationEnv): string {
     result += '<p>⚠️ If you are not using the V3 API, these warnings can be safely ignored.</p>'
   }
   result += '<ul>'
-  for (const config of v3Configurations) {
-    result += buildConfigurationMessage(config, env)
-  }
+  result += buildConfigurationItem(
+    agentScriptDownloadPathVarName,
+    {
+      isSet: isScriptDownloadPathSet(env),
+      required: false,
+    },
+    env
+  )
+  result += buildConfigurationItem(
+    getResultPathVarName,
+    {
+      isSet: isGetResultPathSet(env),
+      required: false,
+    },
+    env
+  )
   result += '</ul>'
 
   return result
 }
 
-async function createOpenClientResponseInformationElement(env: IntegrationEnv): Promise<string> {
-  const configurations: ConfigurationStatus[] = [
+function isUsingDeprecatedSaveToKvStoreKey(): boolean {
+  const configStore = getConfigStore()
+  const hasNewKey = configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) != null
+  const hasOldKey = configStore?.get(saveToKvStorePluginEnabledVarName) != null
+  return !hasNewKey && hasOldKey
+}
+
+async function createPluginConfigurationElement(env: IntegrationEnv): Promise<string> {
+  let result = ''
+  result += `<p style="display: block">🔌 Plugin configuration values:</p>`
+
+  result += '<ul>'
+  result += buildConfigurationItem(
+    openClientResponseVarName,
     {
-      label: openClientResponseVarName,
       isSet: isOpenClientResponseSet(env),
       required: false,
       value: env.OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED,
       showValue: true,
       message: 'Open client response plugins are disabled.',
     },
+    env
+  )
+  result += buildConfigurationItem(
+    decryptionKeyVarName,
     {
-      label: decryptionKeyVarName,
       isSet: isDecryptionKeySet(env),
       required: false,
       message:
         'Open client response plugins are not working correctly. This is required if you want to use Open client response plugins.',
     },
+    env
+  )
+
+  const usingDeprecatedKey = isUsingDeprecatedSaveToKvStoreKey()
+  let sealedResultItem = buildConfigurationItem(
+    saveSealedResultToKvStorePluginEnabledVarName,
     {
-      label: saveToKvStorePluginEnabledVarName,
-      isSet: isSaveToKvStorePluginEnabledSet(env),
+      isSet: isSaveSealedResultToKvStorePluginEnabledSet(env),
       required: false,
-      value: env.SAVE_TO_KV_STORE_PLUGIN_ENABLED,
+      value: env.SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED,
       showValue: true,
     },
-  ]
-
-  let result = ''
-  result += `<p style="display: block">🔌 Open client response configuration values:<br>(Optional, only relevant if you are using <a href="https://dev.fingerprint.com/docs/using-open-client-response-with-fastly-compute-proxy-integration-plugins">Open client response plugins</a>)</p>`
-
-  result += '<ul>'
-  for (const config of configurations) {
-    result += buildConfigurationMessage(config, env)
+    env
+  )
+  if (usingDeprecatedKey) {
+    sealedResultItem = sealedResultItem.replace(
+      '</li>',
+      ` ⚠️ Value is read from deprecated <code>${saveToKvStorePluginEnabledVarName}</code> key. Please migrate to <code>${saveSealedResultToKvStorePluginEnabledVarName}</code>.</li>`
+    )
   }
+  result += sealedResultItem
 
-  if (isOpenClientResponseEnabled(env) && isSaveToKvStorePluginEnabled(env)) {
-    const errorMessage = await buildKVStoreCheckMessage()
+  result += buildConfigurationItem(
+    saveEventToKvStorePluginEnabledVarName,
+    {
+      isSet: isSaveEventToKvStorePluginEnabledSet(env),
+      required: false,
+      value: env.SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED,
+      showValue: true,
+    },
+    env
+  )
+
+  const { resultsKvStoreName, eventsKvStoreName } = getNamesForStores()
+  if (isOpenClientResponseEnabled(env) && isSaveSealedResultToKvStorePluginEnabled(env)) {
+    const errorMessage = await buildKVStoreCheckMessage(
+      saveSealedResultToKvStorePluginEnabledVarName,
+      resultsKvStoreName
+    )
+    if (errorMessage) {
+      result += `<li>${errorMessage}</li>`
+    }
+  }
+  if (isSaveEventToKvStorePluginEnabled(env)) {
+    const errorMessage = await buildKVStoreCheckMessage(saveEventToKvStorePluginEnabledVarName, eventsKvStoreName)
     if (errorMessage) {
       result += `<li>${errorMessage}</li>`
     }
@@ -246,7 +294,7 @@ async function buildBody(env: IntegrationEnv, styleNonce: string): Promise<strin
       body {
         display: flex;
         flex-direction: column;
-        align-items: center;     
+        align-items: center;
       }
       div {
         width: 60%;
@@ -279,10 +327,10 @@ async function buildBody(env: IntegrationEnv, styleNonce: string): Promise<strin
   body += createVersionElement()
   body += createEnvVarsInformationElement(env)
   body += createContactInformationElement()
-  body += await createOpenClientResponseInformationElement(env)
+  body += await createPluginConfigurationElement(env)
 
   body += `
-  </div>  
+  </div>
   </body>
   </html>
   `

@@ -8,7 +8,7 @@ type FingerprintSealedIngressResponseBody = {
   sealed_result?: string | null
 }
 
-export async function processOpenClientResponse(
+export async function processSealedResultResponse(
   parsedBody: Record<string, unknown>,
   bodyBytes: ArrayBuffer,
   response: Response,
@@ -24,7 +24,7 @@ export async function processOpenClientResponse(
     throw new Error('Sealed result is not enabled for this subscription')
   }
   const event = unsealData(sealedResult, decryptionKey)
-  const filteredPlugins = plugins.filter((t) => t.type === 'processOpenClientResponse')
+  const filteredPlugins = plugins.filter((t) => t.type === 'processSealedResult')
   for (const filteredPlugin of filteredPlugins) {
     try {
       const clonedHttpResponse = cloneFastlyResponse(bodyBytes, response)

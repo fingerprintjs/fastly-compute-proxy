@@ -7,6 +7,16 @@ export type ProcessOpenClientResponseContext = {
   httpResponse: Response
 }
 
+export type ProcessSealedResultContext = {
+  event: EventResponse | Event | null
+  httpResponse: Response
+}
+
+export type ProcessIdentificationResponseContext = {
+  response: Record<string, unknown>
+  httpResponse: Response
+}
+
 export function isV4Event(event: EventResponse | Event | null): event is Event {
   return event != null && 'event_id' in event
 }
@@ -21,14 +31,31 @@ export function getEventId(event: EventResponse | Event | null): string | undefi
   return event.products?.identification?.data?.requestId
 }
 
-export type ProcessUnsealedDataPluginFunction = (context: ProcessOpenClientResponseContext) => void | Promise<void>
-type PluginType = 'processOpenClientResponse'
+export type ProcessSealedResultPluginFunction = (context: ProcessSealedResultContext) => void | Promise<void>
+export type ProcessOpenClientResponsePluginFunction = (
+  context: ProcessOpenClientResponseContext
+) => void | Promise<void>
+export type ProcessIdentificationResponsePluginFunction = (
+  context: ProcessIdentificationResponseContext
+) => void | Promise<void>
+
+export type ProcessSealedResultPlugin = {
+  name: string
+  type: 'processSealedResult'
+  callback: ProcessSealedResultPluginFunction
+}
 
 export type ProcessOpenClientResponsePlugin = {
   name: string
-  type: PluginType
-  callback: ProcessUnsealedDataPluginFunction
+  type: 'processOpenClientResponse'
+  callback: ProcessOpenClientResponsePluginFunction
 }
 
-export type Plugin = ProcessOpenClientResponsePlugin // This type will be union of types if more plugin/hook types gets introduced
+export type ProcessIdentificationResponsePlugin = {
+  name: string
+  type: 'processIdentificationResponse'
+  callback: ProcessIdentificationResponsePluginFunction
+}
+
+export type Plugin = ProcessSealedResultPlugin | ProcessOpenClientResponsePlugin | ProcessIdentificationResponsePlugin
 export const plugins: Plugin[] = loadedPlugins
