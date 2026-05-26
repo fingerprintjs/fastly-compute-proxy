@@ -1,5 +1,5 @@
 import { EventResponse } from '@fingerprintjs/fingerprintjs-pro-server-api'
-import { Event } from '@fingerprint/node-sdk'
+import { type Event } from '@fingerprint/node-sdk'
 import loadedPlugins from '../../plugins'
 
 export type ProcessOpenClientResponseContext = {
