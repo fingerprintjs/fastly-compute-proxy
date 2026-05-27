@@ -5,14 +5,17 @@ import { handleRequest } from '../../src'
 import cookie from 'cookie'
 import { SecretStore } from 'fastly:secret-store'
 import { env } from 'fastly:env'
+import packageJson from '../../package.json'
 
 describe('Browser Cache', () => {
   let requestHeaders: Headers
+  let receivedUrl: string
   let storeName: string
 
   beforeAll(() => {
     jest.spyOn(globalThis, 'fetch').mockImplementation((request, init) => {
       if (request instanceof Request) {
+        receivedUrl = request.url.toString()
         requestHeaders = request.headers
       }
       return globalThis.fetch(request, init)
@@ -28,6 +31,7 @@ describe('Browser Cache', () => {
     config.set('GET_RESULT_PATH', 'result')
     // Reset fetch spy calls between tests if needed
     jest.clearAllMocks()
+    receivedUrl = ''
     requestHeaders = new Headers()
   })
 
@@ -41,6 +45,14 @@ describe('Browser Cache', () => {
     )
   })
 
+  it('should not include ii parameter', async () => {
+    const request = makeRequest(new URL('https://test/result'))
+    await handleRequest(request)
+
+    const url = new URL(receivedUrl)
+    expect(url.searchParams.has('ii')).toBe(false)
+  })
+
   it('should delete cookie header', async () => {
     const request = makeRequest(new URL('https://test/result'), { headers: {} })
     await handleRequest(request)
@@ -51,11 +63,13 @@ describe('Browser Cache', () => {
 
 describe('Ingress', () => {
   let requestHeaders: Headers
+  let receivedUrl: string
   let storeName: string
 
   beforeAll(() => {
     jest.spyOn(globalThis, 'fetch').mockImplementation((request, init) => {
       if (request instanceof Request) {
+        receivedUrl = request.url.toString()
         requestHeaders = request.headers
       }
       return globalThis.fetch(request, init)
@@ -70,6 +84,7 @@ describe('Ingress', () => {
     config.set('GET_RESULT_PATH', 'result')
     // Reset fetch spy calls between tests if needed
     jest.clearAllMocks()
+    receivedUrl = ''
     requestHeaders = new Headers()
   })
 
@@ -81,6 +96,14 @@ describe('Ingress', () => {
       expect.objectContaining({ method: 'POST' }),
       expect.objectContaining({ backend: 'api.fpjs.io' })
     )
+  })
+
+  it('should include ii parameter', async () => {
+    const request = makeRequest(new URL('https://test/result'), { method: 'POST' })
+    await handleRequest(request)
+
+    const url = new URL(receivedUrl)
+    expect(url.searchParams.get('ii')).toBe(`fingerprint-pro-fastly-compute/${packageJson.version}/ingress`)
   })
 
   it('should remove cookies if iidt not present', async () => {

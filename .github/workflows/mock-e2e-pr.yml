@@ -66,7 +66,6 @@ jobs:
           DEFAULT_ORIGIN: ${{secrets.DEFAULT_ORIGIN}}
           FASTLY_API_TOKEN: ${{secrets.FASTLY_API_TOKEN}}
           FPJS_BACKEND_URL: ${{secrets.MOCK_WARDEN_DOMAIN}}
-          FPCDN_URL: ${{secrets.MOCK_WARDEN_DOMAIN}}
           STORE_NAME_PREFIX: "E2ETest"
         run: pnpm run ci
       - name: Wait for 60s

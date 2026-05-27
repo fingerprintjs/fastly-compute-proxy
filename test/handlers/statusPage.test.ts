@@ -10,7 +10,8 @@ import {
   getResultPathVarName,
   openClientResponseVarName,
   proxySecretVarName,
-  saveToKvStorePluginEnabledVarName,
+  saveSealedResultToKvStorePluginEnabledVarName,
+  saveEventToKvStorePluginEnabledVarName,
 } from '../../src/env'
 import * as envFunctions from '../../src/env'
 import { Backend } from 'fastly:backend'
@@ -84,12 +85,8 @@ describe('Status Page', () => {
     const response = await handleRequest(request)
 
     const responseText = await response.text()
-    expect(responseText).toContain(
-      '<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Required) is missing ❌. Your integration is not working correctly.</li>'
-    )
-    expect(responseText).toContain(
-      '<li><code>GET_RESULT_PATH</code> (Required) is missing ❌. Your integration is not working correctly.</li>'
-    )
+    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Optional) is not set ⚠️.</li>')
+    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Optional) is not set ⚠️.</li>')
     expect(responseText).toContain(
       '<li><code>PROXY_SECRET</code> (Required) is missing ❌. Your integration is not working correctly.</li>'
     )
@@ -106,7 +103,9 @@ describe('Status Page', () => {
     // @ts-ignore
     config.set(openClientResponseVarName, 'true')
     // @ts-ignore
-    config.set(saveToKvStorePluginEnabledVarName, 'true')
+    config.set(saveSealedResultToKvStorePluginEnabledVarName, 'true')
+    // @ts-ignore
+    config.set(saveEventToKvStorePluginEnabledVarName, 'true')
     // @ts-ignore
     secret.set(proxySecretVarName, 'proxy_secret')
     // @ts-ignore
@@ -117,16 +116,16 @@ describe('Status Page', () => {
 
     const responseText = await response.text()
 
-    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Required) is set ✅. </li>')
-    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Required) is set ✅. </li>')
-    expect(responseText).toContain('<li><code>PROXY_SECRET</code> (Required) is set ✅. </li>')
+    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Optional) is set ✅.</li>')
+    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Optional) is set ✅.</li>')
+    expect(responseText).toContain('<li><code>PROXY_SECRET</code> (Required) is set ✅.</li>')
 
     expect(responseText).toContain(
-      '<li><code>OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED</code> (Optional) is <code>true</code> ✅. </li>'
+      '<li><code>OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED</code> (Optional) is <code>true</code> ✅.</li>'
     )
-    expect(responseText).toContain('<li><code>DECRYPTION_KEY</code> (Optional) is set ✅. </li>')
+    expect(responseText).toContain('<li><code>DECRYPTION_KEY</code> (Optional) is set ✅.</li>')
     expect(responseText).toContain(
-      '<li><code>SAVE_TO_KV_STORE_PLUGIN_ENABLED</code> (Optional) is <code>true</code> ✅. </li>'
+      '<li><code>SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED</code> (Optional) is <code>true</code> ✅.</li>'
     )
 
     expect(responseText).not.toContain('is missing ❌')
@@ -168,8 +167,8 @@ describe('Status Page Error Cases', () => {
     const responseText = await response.text()
 
     expect(responseText).toContain('Your integration is not working correctly')
-    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Required) is missing ❌')
-    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Required) is missing ❌')
+    expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Optional) is not set ⚠️')
+    expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Optional) is not set ⚠️')
   })
 
   it('should show error when secret store value is not set', async () => {
@@ -196,7 +195,7 @@ describe('Status Page Error Cases', () => {
     )
   })
 
-  it('should show warning when SAVE_TO_KV_STORE_PLUGIN_ENABLED is enabled but OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED is not', async () => {
+  it('should show warning when SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED is enabled but OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED is not', async () => {
     // @ts-ignore
     configStore.set('AGENT_SCRIPT_DOWNLOAD_PATH', 'agent')
     // @ts-ignore
@@ -204,7 +203,7 @@ describe('Status Page Error Cases', () => {
     // @ts-ignore
     secretStore.set('PROXY_SECRET', 'test-secret')
     // @ts-ignore
-    configStore.set('SAVE_TO_KV_STORE_PLUGIN_ENABLED', 'true')
+    configStore.set('SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED', 'true')
     // @ts-ignore
     configStore.set('OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED', 'false')
 
@@ -213,10 +212,10 @@ describe('Status Page Error Cases', () => {
     const responseText = await response.text()
 
     expect(responseText).toContain(
-      '<li><code>SAVE_TO_KV_STORE_PLUGIN_ENABLED</code> (Optional) is <code>true</code> ✅'
+      '<li><code>SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED</code> (Optional) is <code>true</code> ✅'
     )
     expect(responseText).toContain(
-      '<li><code>OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED</code> (Optional) is <code>false</code> ✅. </li>'
+      '<li><code>OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED</code> (Optional) is <code>false</code> ✅.</li>'
     )
   })
 
@@ -228,7 +227,7 @@ describe('Status Page Error Cases', () => {
     // @ts-ignore
     secretStore.set('PROXY_SECRET', 'test-secret')
     // @ts-ignore
-    configStore.set('SAVE_TO_KV_STORE_PLUGIN_ENABLED', 'true')
+    configStore.set('SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED', 'true')
     // @ts-ignore
     configStore.set('OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED', 'true')
 
@@ -239,7 +238,7 @@ describe('Status Page Error Cases', () => {
     const responseText = await response.text()
 
     expect(responseText).toContain(
-      "⚠️You have <code>SAVE_TO_KV_STORE_PLUGIN_ENABLED</code> enabled, but we couldn't reach your KVStore"
+      "⚠️You have <code>SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED</code> enabled, but we couldn't reach your KVStore"
     )
   })
 })
@@ -247,13 +246,6 @@ describe('Status Page Error Cases', () => {
 describe('Status page Backend Tests', () => {
   beforeEach(() => {
     jest.resetAllMocks()
-  })
-
-  it('should show warning when fpcdn.io backend is missing', () => {
-    jest.spyOn(Backend, 'exists').mockImplementation((backend) => backend !== 'fpcdn.io')
-
-    const result = getBackendsInformation()
-    expect(result).toContain('⚠️ Your integration is missing "fpcdn.io" backend host.')
   })
 
   it('should show warning when all region backends are missing', () => {
@@ -334,18 +326,6 @@ describe('Status page Backend Tests', () => {
     const result = getBackendsInformation()
     expect(result).toContain(
       'Integration is configured for these <a href="https://dev.fingerprint.com/docs/regions">regions</a>: <strong>US, EU, AP</strong>'
-    )
-  })
-
-  it('should show fpcdn.io warning and region information when applicable', () => {
-    jest
-      .spyOn(Backend, 'exists')
-      .mockImplementation((backend) => backend === 'api.fpjs.io' || backend === 'eu.api.fpjs.io')
-
-    const result = getBackendsInformation()
-    expect(result).toContain('⚠️ Your integration is missing "fpcdn.io" backend host.')
-    expect(result).toContain(
-      'Integration is configured for these <a href="https://dev.fingerprint.com/docs/regions">regions</a>: <strong>US, EU</strong>'
     )
   })
 })
