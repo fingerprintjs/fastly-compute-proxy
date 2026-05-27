@@ -32,6 +32,9 @@ export function getEventId(event: EventResponse | Event | null): string | undefi
 }
 
 export type ProcessSealedResultPluginFunction = (context: ProcessSealedResultContext) => void | Promise<void>
+/**
+ * @deprecated Use {@link ProcessSealedResultPluginFunction} or {@link ProcessIdentificationResponsePluginFunction} instead.
+ */
 export type ProcessOpenClientResponsePluginFunction = (
   context: ProcessOpenClientResponseContext
 ) => void | Promise<void>
@@ -45,6 +48,9 @@ export type ProcessSealedResultPlugin = {
   callback: ProcessSealedResultPluginFunction
 }
 
+/**
+ * @deprecated Use {@link ProcessSealedResultPlugin} or {@link ProcessIdentificationResponsePlugin} instead.
+ */
 export type ProcessOpenClientResponsePlugin = {
   name: string
   type: 'processOpenClientResponse'
