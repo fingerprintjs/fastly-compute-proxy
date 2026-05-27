@@ -17,7 +17,7 @@ export async function processSealedResultResponse(
   const typedBody = parsedBody as unknown as FingerprintSealedIngressResponseBody
   const sealedResult = typedBody.sealedResult ?? typedBody.sealed_result
   if (!sealedResult) {
-    return
+    throw new Error('Sealed result is not enabled for this subscription')
   }
 
   const decryptionKey = getDecryptionKey(env)
