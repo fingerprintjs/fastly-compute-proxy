@@ -8,7 +8,6 @@ import {
 import { getFilteredCookies } from '../utils/cookie'
 import { processOpenClientResponse } from '../utils/processOpenClientResponse'
 import { processSealedResultResponse } from '../utils/processSealedResultResponse'
-import { processIdentificationResponse } from '../utils/processIdentificationResponse'
 import { cloneFastlyResponse } from '../utils/cloneFastlyResponse'
 import { getIngressBackendByRegion } from '../utils/getIngressBackendByRegion'
 import { decompressBody } from '../utils/decompressBody'
@@ -60,9 +59,6 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
 
   if (parsedBody) {
     Promise.resolve().then(() => {
-      processIdentificationResponse(parsedBody, bodyBytes, response).catch((e) =>
-        console.error('Failed to process identification response plugins: ', e)
-      )
       if (isDecryptionKeySet(env)) {
         processSealedResultResponse(parsedBody, bodyBytes, response, env).catch((e) =>
           console.error('Make sure Decryption Key is activated from Fingerprint workspace: ', e)

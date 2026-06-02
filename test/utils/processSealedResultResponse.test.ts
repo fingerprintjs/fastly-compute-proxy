@@ -26,11 +26,6 @@ jest.mock('../../src/utils/registerPlugin', () => ({
       type: 'processOpenClientResponse',
       callback: jest.fn(),
     },
-    {
-      name: 'identificationPlugin',
-      type: 'processIdentificationResponse',
-      callback: jest.fn(),
-    },
   ],
 }))
 
@@ -93,7 +88,6 @@ describe('processSealedResultResponse', () => {
     expect(plugins[0].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
     expect(plugins[1].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
     expect(plugins[2].callback).not.toHaveBeenCalled()
-    expect(plugins[3].callback).not.toHaveBeenCalled()
   })
 
   it('should process valid response with sealed_result (snake_case) and call plugins', async () => {
@@ -133,6 +127,7 @@ describe('processSealedResultResponse', () => {
 
   it('should handle plugin errors without throwing', async () => {
     const parsedBody = { sealedResult: 'mockSealedResult' }
+    // @ts-ignore
     jest.mocked(plugins[0].callback).mockRejectedValue(new Error('Plugin error'))
     console.error = jest.fn()
 

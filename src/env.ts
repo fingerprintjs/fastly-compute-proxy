@@ -7,7 +7,6 @@ export type IntegrationEnv = {
   OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED: string | null
   DECRYPTION_KEY: string | null
   SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED: string | null
-  SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: string | null
 }
 
 const Defaults: IntegrationEnv = {
@@ -17,7 +16,6 @@ const Defaults: IntegrationEnv = {
   OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED: 'false',
   DECRYPTION_KEY: null,
   SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED: 'false',
-  SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: 'false',
 }
 
 function getVarOrDefault(
@@ -80,13 +78,6 @@ export const isSaveSealedResultToKvStorePluginEnabledSet = (env: IntegrationEnv)
 export const isSaveSealedResultToKvStorePluginEnabled = (env: IntegrationEnv) =>
   env[saveSealedResultToKvStorePluginEnabledVarName]?.toLowerCase() === 'true'
 
-export const saveEventToKvStorePluginEnabledVarName = 'SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED'
-export const isSaveEventToKvStorePluginEnabledSet = (env: IntegrationEnv) =>
-  env.SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED === 'true' || env.SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED === 'false'
-
-export const isSaveEventToKvStorePluginEnabled = (env: IntegrationEnv) =>
-  env[saveEventToKvStorePluginEnabledVarName]?.toLowerCase() === 'true'
-
 export function getProxySecret(env: IntegrationEnv): string | null {
   return getProxySecretVar(env)
 }
@@ -138,7 +129,6 @@ export async function getEnvObject(): Promise<IntegrationEnv> {
       configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) ??
       configStore?.get(saveToKvStorePluginEnabledVarName) ??
       null,
-    SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: configStore?.get(saveEventToKvStorePluginEnabledVarName) ?? null,
     PROXY_SECRET: (await secretStore?.get(proxySecretVarName))?.plaintext() ?? null,
     DECRYPTION_KEY: (await secretStore?.get(decryptionKeyVarName))?.plaintext() ?? null,
   }

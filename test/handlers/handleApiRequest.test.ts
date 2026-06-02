@@ -3,11 +3,9 @@ import { handleApiRequest } from '../../src/handlers'
 import * as envModule from '../../src/env'
 import * as processSealedResultModule from '../../src/utils/processSealedResultResponse'
 import * as processOpenClientResponseModule from '../../src/utils/processOpenClientResponse'
-import * as processIdentificationResponseModule from '../../src/utils/processIdentificationResponse'
 
 jest.mock('../../src/utils/processSealedResultResponse')
 jest.mock('../../src/utils/processOpenClientResponse')
-jest.mock('../../src/utils/processIdentificationResponse')
 
 describe('handleApiRequest plugin invocation', () => {
   const mockEnv: envModule.IntegrationEnv = {
@@ -17,14 +15,12 @@ describe('handleApiRequest plugin invocation', () => {
     DECRYPTION_KEY: null,
     OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED: null,
     SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED: null,
-    SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: null,
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(processSealedResultModule.processSealedResultResponse).mockResolvedValue(undefined)
     jest.mocked(processOpenClientResponseModule.processOpenClientResponse).mockResolvedValue(undefined)
-    jest.mocked(processIdentificationResponseModule.processIdentificationResponse).mockResolvedValue(undefined)
 
     jest
       .spyOn(globalThis, 'fetch')
@@ -80,14 +76,5 @@ describe('handleApiRequest plugin invocation', () => {
       expect.stringContaining('Make sure Decryption Key is activated from Fingerprint workspace: '),
       error
     )
-  })
-
-  it('should always call processIdentificationResponse', async () => {
-    const env = { ...mockEnv, DECRYPTION_KEY: null }
-
-    const request = new Request('https://test/result', { method: 'POST' })
-    await handleApiRequest(request, env, '/result')
-
-    expect(processIdentificationResponseModule.processIdentificationResponse).toHaveBeenCalledTimes(1)
   })
 })

@@ -11,7 +11,6 @@ import {
   openClientResponseVarName,
   proxySecretVarName,
   saveSealedResultToKvStorePluginEnabledVarName,
-  saveEventToKvStorePluginEnabledVarName,
 } from '../../src/env'
 import * as envFunctions from '../../src/env'
 import { Backend } from 'fastly:backend'
@@ -104,8 +103,6 @@ describe('Status Page', () => {
     config.set(openClientResponseVarName, 'true')
     // @ts-ignore
     config.set(saveSealedResultToKvStorePluginEnabledVarName, 'true')
-    // @ts-ignore
-    config.set(saveEventToKvStorePluginEnabledVarName, 'true')
     // @ts-ignore
     secret.set(proxySecretVarName, 'proxy_secret')
     // @ts-ignore

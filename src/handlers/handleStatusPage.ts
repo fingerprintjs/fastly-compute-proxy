@@ -15,9 +15,6 @@ import {
   saveToKvStorePluginEnabledVarName,
   isSaveSealedResultToKvStorePluginEnabled,
   isSaveSealedResultToKvStorePluginEnabledSet,
-  saveEventToKvStorePluginEnabledVarName,
-  isSaveEventToKvStorePluginEnabled,
-  isSaveEventToKvStorePluginEnabledSet,
   getDecryptionKey,
   checkKVStoreAvailability,
 } from '../env'
@@ -255,29 +252,12 @@ async function createPluginConfigurationElement(env: IntegrationEnv): Promise<st
   }
   result += sealedResultItem
 
-  result += buildConfigurationItem(
-    saveEventToKvStorePluginEnabledVarName,
-    {
-      isSet: isSaveEventToKvStorePluginEnabledSet(env),
-      required: false,
-      value: env.SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED,
-      showValue: true,
-    },
-    env
-  )
-
-  const { resultsKvStoreName, eventsKvStoreName } = getNamesForStores()
+  const { resultsKvStoreName } = getNamesForStores()
   if (isOpenClientResponseEnabled(env) && isSaveSealedResultToKvStorePluginEnabled(env)) {
     const errorMessage = await buildKVStoreCheckMessage(
       saveSealedResultToKvStorePluginEnabledVarName,
       resultsKvStoreName
     )
-    if (errorMessage) {
-      result += `<li>${errorMessage}</li>`
-    }
-  }
-  if (isSaveEventToKvStorePluginEnabled(env)) {
-    const errorMessage = await buildKVStoreCheckMessage(saveEventToKvStorePluginEnabledVarName, eventsKvStoreName)
     if (errorMessage) {
       result += `<li>${errorMessage}</li>`
     }

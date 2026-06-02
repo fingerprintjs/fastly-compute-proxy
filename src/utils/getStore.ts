@@ -9,13 +9,11 @@ export function getNamesForStores() {
   const configStoreName = `${storeNamePrefix}_Config_Store_${serviceId}`
   const secretStoreName = `${storeNamePrefix}_Secret_Store_${serviceId}`
   const resultsKvStoreName = `Fingerprint_Results_${serviceId}`
-  const eventsKvStoreName = `Fingerprint_Events_${serviceId}`
 
   return {
     configStoreName,
     secretStoreName,
     resultsKvStoreName,
-    eventsKvStoreName,
   }
 }
 export function getConfigStore() {
