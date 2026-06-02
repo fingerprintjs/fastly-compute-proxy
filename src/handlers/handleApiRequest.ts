@@ -1,4 +1,4 @@
-import { IntegrationEnv, isOpenClientResponseEnabled, isProxySecretSet } from '../env'
+import { IntegrationEnv, isDecryptionKeySet, isOpenClientResponseEnabled, isProxySecretSet } from '../env'
 import {
   addProxyIntegrationHeaders,
   addTrafficMonitoringSearchParamsForVisitorIdRequest,
@@ -63,12 +63,11 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
       processIdentificationResponse(parsedBody, bodyBytes, response).catch((e) =>
         console.error('Failed to process identification response plugins: ', e)
       )
-      processSealedResultResponse(parsedBody, bodyBytes, response, env).catch((e) =>
-        console.error(
-          'Make sure Decryption Key is added to Secret Store and its activated from Fingerprint workspace: ',
-          e
+      if (isDecryptionKeySet(env)) {
+        processSealedResultResponse(parsedBody, bodyBytes, response, env).catch((e) =>
+          console.error('Make sure Decryption Key is activated from Fingerprint workspace: ', e)
         )
-      )
+      }
       if (isOpenClientResponseEnabled(env)) {
         processOpenClientResponse(parsedBody, bodyBytes, response, env).catch((e) =>
           console.error(
