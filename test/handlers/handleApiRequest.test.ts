@@ -20,15 +20,15 @@ describe('handleApiRequest plugin invocation', () => {
     SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: null,
   }
 
+  const fetchSpy = jest.spyOn(globalThis, 'fetch')
+
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(processSealedResultModule.processSealedResultResponse).mockResolvedValue(undefined)
     jest.mocked(processOpenClientResponseModule.processOpenClientResponse).mockResolvedValue(undefined)
     jest.mocked(processIdentificationResponseModule.processIdentificationResponse).mockResolvedValue(undefined)
 
-    jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response(JSON.stringify({ requestId: 'test' }), { status: 200 }))
+    fetchSpy.mockResolvedValue(new Response(JSON.stringify({ requestId: 'test' }), { status: 200 }))
   })
 
   it('should not call processSealedResultResponse when DECRYPTION_KEY is not set', async () => {
