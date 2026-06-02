@@ -80,6 +80,8 @@ describe('handleApiRequest plugin invocation', () => {
       expect.stringContaining('Make sure Decryption Key is activated from Fingerprint workspace: '),
       error
     )
+
+    consoleErrorSpy.mockRestore()
   })
 
   it('should always call processIdentificationResponse', async () => {
