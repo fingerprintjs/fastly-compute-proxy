@@ -67,6 +67,21 @@ describe('handleApiRequest plugin invocation', () => {
     expect(processSealedResultModule.processSealedResultResponse).toHaveBeenCalledTimes(1)
   })
 
+  it('should log error when processSealedResultResponse rejects', async () => {
+    const env = { ...mockEnv, DECRYPTION_KEY: 'some-decryption-key' }
+    const error = new Error('Sealed result is not enabled for this subscription')
+    jest.mocked(processSealedResultModule.processSealedResultResponse).mockRejectedValue(error)
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    const request = new Request('https://test/result', { method: 'POST' })
+    await handleApiRequest(request, env, '/result')
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Make sure Decryption Key is activated from Fingerprint workspace: '),
+      error
+    )
+  })
+
   it('should always call processIdentificationResponse', async () => {
     const env = { ...mockEnv, DECRYPTION_KEY: null }
 
