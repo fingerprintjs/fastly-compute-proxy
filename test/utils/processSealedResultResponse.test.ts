@@ -21,6 +21,11 @@ jest.mock('../../src/utils/registerPlugin', () => ({
       type: 'processSealedResult',
       callback: jest.fn(),
     },
+    {
+      name: 'legacyOpenClientPlugin',
+      type: 'processOpenClientResponse',
+      callback: jest.fn(),
+    },
   ],
 }))
 
@@ -72,16 +77,17 @@ describe('processSealedResultResponse', () => {
     jest.mocked(cloneFastlyResponse).mockReturnValue(new Response('cloned'))
   })
 
-  it('should process valid response with sealedResult and call only processSealedResult plugins', async () => {
+  it('should process valid response with sealedResult and call all plugins including legacy processOpenClientResponse', async () => {
     const parsedBody = { sealedResult: 'mockSealedResult' }
 
     await processSealedResultResponse(parsedBody, mockBodyBytes, mockResponse, mockEnv)
 
     expect(envModule.getDecryptionKey).toHaveBeenCalledWith(mockEnv)
     expect(unsealData).toHaveBeenCalledWith('mockSealedResult', mockDecryptionKey)
-    expect(cloneFastlyResponse).toHaveBeenCalledTimes(2)
+    expect(cloneFastlyResponse).toHaveBeenCalledTimes(3)
     expect(plugins[0].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
     expect(plugins[1].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
+    expect(plugins[2].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
   })
 
   it('should process valid response with sealed_result (snake_case) and call plugins', async () => {
