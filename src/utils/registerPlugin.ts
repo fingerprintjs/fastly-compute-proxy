@@ -2,15 +2,15 @@ import { EventResponse } from '@fingerprintjs/fingerprintjs-pro-server-api'
 import { type Event } from '@fingerprint/node-sdk'
 import loadedPlugins from '../../plugins'
 
-export type ProcessOpenClientResponseContext = {
-  event: EventResponse | Event | null
-  httpResponse: Response
-}
-
 export type ProcessSealedResultContext = {
   event: EventResponse | Event | null
   httpResponse: Response
 }
+
+/**
+ * @deprecated Use {@link ProcessSealedResultContext} instead.
+ */
+export type ProcessOpenClientResponseContext = ProcessSealedResultContext
 
 export function isV4Event(event: EventResponse | Event | null): event is Event {
   return event != null && 'event_id' in event
@@ -30,9 +30,7 @@ export type ProcessSealedResultPluginFunction = (context: ProcessSealedResultCon
 /**
  * @deprecated Use {@link ProcessSealedResultPluginFunction} instead.
  */
-export type ProcessOpenClientResponsePluginFunction = (
-  context: ProcessOpenClientResponseContext
-) => void | Promise<void>
+export type ProcessOpenClientResponsePluginFunction = ProcessSealedResultPluginFunction
 
 export type ProcessSealedResultPlugin = {
   name: string

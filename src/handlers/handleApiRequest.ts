@@ -1,4 +1,4 @@
-import { IntegrationEnv, isDecryptionKeySet, isOpenClientResponseEnabled, isProxySecretSet } from '../env'
+import { IntegrationEnv, isDecryptionKeySet, isProxySecretSet } from '../env'
 import {
   addProxyIntegrationHeaders,
   addTrafficMonitoringSearchParamsForVisitorIdRequest,
@@ -6,7 +6,6 @@ import {
   createFallbackErrorResponse,
 } from '../utils'
 import { getFilteredCookies } from '../utils/cookie'
-import { processOpenClientResponse } from '../utils/processOpenClientResponse'
 import { processSealedResultResponse } from '../utils/processSealedResultResponse'
 import { cloneFastlyResponse } from '../utils/cloneFastlyResponse'
 import { getIngressBackendByRegion } from '../utils/getIngressBackendByRegion'
@@ -62,14 +61,6 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
       if (isDecryptionKeySet(env)) {
         processSealedResultResponse(parsedBody, bodyBytes, response, env).catch((e) =>
           console.error('Make sure Decryption Key is activated from Fingerprint workspace: ', e)
-        )
-      }
-      if (isOpenClientResponseEnabled(env)) {
-        processOpenClientResponse(parsedBody, bodyBytes, response, env).catch((e) =>
-          console.error(
-            'Make sure OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED is set to true in Config Store, Decryption Key is added to Secret Store, and Open Client Response is enabled for your Fingerprint workspace: ',
-            e
-          )
         )
       }
     })

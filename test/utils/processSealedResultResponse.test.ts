@@ -21,11 +21,6 @@ jest.mock('../../src/utils/registerPlugin', () => ({
       type: 'processSealedResult',
       callback: jest.fn(),
     },
-    {
-      name: 'openClientPlugin',
-      type: 'processOpenClientResponse',
-      callback: jest.fn(),
-    },
   ],
 }))
 
@@ -87,7 +82,6 @@ describe('processSealedResultResponse', () => {
     expect(cloneFastlyResponse).toHaveBeenCalledTimes(2)
     expect(plugins[0].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
     expect(plugins[1].callback).toHaveBeenCalledWith({ event: mockEvent, httpResponse: expect.any(Response) })
-    expect(plugins[2].callback).not.toHaveBeenCalled()
   })
 
   it('should process valid response with sealed_result (snake_case) and call plugins', async () => {

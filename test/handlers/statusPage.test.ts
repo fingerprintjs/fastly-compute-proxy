@@ -8,9 +8,8 @@ import {
   agentScriptDownloadPathVarName,
   decryptionKeyVarName,
   getResultPathVarName,
-  openClientResponseVarName,
   proxySecretVarName,
-  saveSealedResultToKvStorePluginEnabledVarName,
+  saveToKvStorePluginEnabledVarName,
 } from '../../src/env'
 import * as envFunctions from '../../src/env'
 import { Backend } from 'fastly:backend'
@@ -32,7 +31,7 @@ describe('Status Page', () => {
     // @ts-ignore
     config.set(getResultPathVarName, null)
     // @ts-ignore
-    config.set(openClientResponseVarName, null)
+    config.set(saveToKvStorePluginEnabledVarName, null)
     // @ts-ignore
     secret.set(proxySecretVarName, null)
     // @ts-ignore
@@ -90,7 +89,7 @@ describe('Status Page', () => {
       '<li><code>PROXY_SECRET</code> (Required) is missing ❌. Your integration is not working correctly.</li>'
     )
     expect(responseText).toContain(
-      '<li><code>DECRYPTION_KEY</code> (Optional) is not set ⚠️. Open client response plugins are not working correctly. This is required if you want to use Open client response plugins.</li>'
+      '<li><code>DECRYPTION_KEY</code> (Optional) is not set ⚠️. Plugins are not working correctly. This is required if you want to use plugins.</li>'
     )
   })
 
@@ -100,9 +99,7 @@ describe('Status Page', () => {
     // @ts-ignore
     config.set(getResultPathVarName, 'result')
     // @ts-ignore
-    config.set(openClientResponseVarName, 'true')
-    // @ts-ignore
-    config.set(saveSealedResultToKvStorePluginEnabledVarName, 'true')
+    config.set(saveToKvStorePluginEnabledVarName, 'true')
     // @ts-ignore
     secret.set(proxySecretVarName, 'proxy_secret')
     // @ts-ignore
@@ -116,13 +113,9 @@ describe('Status Page', () => {
     expect(responseText).toContain('<li><code>AGENT_SCRIPT_DOWNLOAD_PATH</code> (Optional) is set ✅.</li>')
     expect(responseText).toContain('<li><code>GET_RESULT_PATH</code> (Optional) is set ✅.</li>')
     expect(responseText).toContain('<li><code>PROXY_SECRET</code> (Required) is set ✅.</li>')
-
-    expect(responseText).toContain(
-      '<li><code>OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED</code> (Optional) is <code>true</code> ✅.</li>'
-    )
     expect(responseText).toContain('<li><code>DECRYPTION_KEY</code> (Optional) is set ✅.</li>')
     expect(responseText).toContain(
-      '<li><code>SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED</code> (Optional) is <code>true</code> ✅.</li>'
+      '<li><code>SAVE_TO_KV_STORE_PLUGIN_ENABLED</code> (Optional) is <code>true</code> ✅.</li>'
     )
 
     expect(responseText).not.toContain('is missing ❌')
@@ -192,30 +185,6 @@ describe('Status Page Error Cases', () => {
     )
   })
 
-  it('should show warning when SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED is enabled but OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED is not', async () => {
-    // @ts-ignore
-    configStore.set('AGENT_SCRIPT_DOWNLOAD_PATH', 'agent')
-    // @ts-ignore
-    configStore.set('GET_RESULT_PATH', 'result')
-    // @ts-ignore
-    secretStore.set('PROXY_SECRET', 'test-secret')
-    // @ts-ignore
-    configStore.set('SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED', 'true')
-    // @ts-ignore
-    configStore.set('OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED', 'false')
-
-    const request = makeRequest(new URL('https://test/status'))
-    const response = await handleRequest(request)
-    const responseText = await response.text()
-
-    expect(responseText).toContain(
-      '<li><code>SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED</code> (Optional) is <code>true</code> ✅'
-    )
-    expect(responseText).toContain(
-      '<li><code>OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED</code> (Optional) is <code>false</code> ✅.</li>'
-    )
-  })
-
   it('should show error when KV store is not available', async () => {
     // @ts-ignore
     configStore.set('AGENT_SCRIPT_DOWNLOAD_PATH', 'agent')
@@ -224,9 +193,7 @@ describe('Status Page Error Cases', () => {
     // @ts-ignore
     secretStore.set('PROXY_SECRET', 'test-secret')
     // @ts-ignore
-    configStore.set('SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED', 'true')
-    // @ts-ignore
-    configStore.set('OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED', 'true')
+    configStore.set('SAVE_TO_KV_STORE_PLUGIN_ENABLED', 'true')
 
     jest.spyOn(envFunctions, 'checkKVStoreAvailability').mockResolvedValue(false)
 
@@ -235,7 +202,7 @@ describe('Status Page Error Cases', () => {
     const responseText = await response.text()
 
     expect(responseText).toContain(
-      "⚠️You have <code>SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED</code> enabled, but we couldn't reach your KVStore"
+      "⚠️You have <code>SAVE_TO_KV_STORE_PLUGIN_ENABLED</code> enabled, but we couldn't reach your KVStore"
     )
   })
 })

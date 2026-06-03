@@ -2,10 +2,8 @@ import { describe, expect, it, jest, beforeEach } from '@jest/globals'
 import { handleApiRequest } from '../../src/handlers'
 import * as envModule from '../../src/env'
 import * as processSealedResultModule from '../../src/utils/processSealedResultResponse'
-import * as processOpenClientResponseModule from '../../src/utils/processOpenClientResponse'
 
 jest.mock('../../src/utils/processSealedResultResponse')
-jest.mock('../../src/utils/processOpenClientResponse')
 
 describe('handleApiRequest plugin invocation', () => {
   const mockEnv: envModule.IntegrationEnv = {
@@ -13,14 +11,12 @@ describe('handleApiRequest plugin invocation', () => {
     GET_RESULT_PATH: 'result',
     PROXY_SECRET: 'secret',
     DECRYPTION_KEY: null,
-    OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED: null,
-    SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED: null,
+    SAVE_TO_KV_STORE_PLUGIN_ENABLED: null,
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(processSealedResultModule.processSealedResultResponse).mockResolvedValue(undefined)
-    jest.mocked(processOpenClientResponseModule.processOpenClientResponse).mockResolvedValue(undefined)
 
     jest
       .spyOn(globalThis, 'fetch')

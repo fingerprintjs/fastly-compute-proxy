@@ -6,21 +6,17 @@ import {
   agentScriptDownloadPathVarName,
   getResultPathVarName,
   proxySecretVarName,
-  isOpenClientResponseSet,
-  openClientResponseVarName,
   decryptionKeyVarName,
-  isOpenClientResponseEnabled,
   isDecryptionKeySet,
-  saveSealedResultToKvStorePluginEnabledVarName,
   saveToKvStorePluginEnabledVarName,
-  isSaveSealedResultToKvStorePluginEnabled,
-  isSaveSealedResultToKvStorePluginEnabledSet,
+  isSaveToKvStorePluginEnabled,
+  isSaveToKvStorePluginEnabledSet,
   getDecryptionKey,
   checkKVStoreAvailability,
 } from '../env'
 import packageJson from '../../package.json'
 import { env } from 'fastly:env'
-import { getConfigStore, getNamesForStores } from '../utils/getStore'
+import { getNamesForStores } from '../utils/getStore'
 import { Backend } from 'fastly:backend'
 
 function generateNonce() {
@@ -195,69 +191,34 @@ function createEnvVarsInformationElement(env: IntegrationEnv): string {
   return result
 }
 
-function isUsingDeprecatedSaveToKvStoreKey(): boolean {
-  try {
-    const configStore = getConfigStore()
-    const hasNewKey = configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) != null
-    const hasOldKey = configStore?.get(saveToKvStorePluginEnabledVarName) != null
-    return !hasNewKey && hasOldKey
-  } catch {
-    return false
-  }
-}
-
 async function createPluginConfigurationElement(env: IntegrationEnv): Promise<string> {
   let result = ''
   result += `<p style="display: block">🔌 Plugin configuration values:</p>`
 
   result += '<ul>'
   result += buildConfigurationItem(
-    openClientResponseVarName,
-    {
-      isSet: isOpenClientResponseSet(env),
-      required: false,
-      value: env.OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED,
-      showValue: true,
-      message: 'Open client response plugins are disabled.',
-    },
-    env
-  )
-  result += buildConfigurationItem(
     decryptionKeyVarName,
     {
       isSet: isDecryptionKeySet(env),
       required: false,
-      message:
-        'Open client response plugins are not working correctly. This is required if you want to use Open client response plugins.',
+      message: 'Plugins are not working correctly. This is required if you want to use plugins.',
     },
     env
   )
-
-  const usingDeprecatedKey = isUsingDeprecatedSaveToKvStoreKey()
-  let sealedResultItem = buildConfigurationItem(
-    saveSealedResultToKvStorePluginEnabledVarName,
+  result += buildConfigurationItem(
+    saveToKvStorePluginEnabledVarName,
     {
-      isSet: isSaveSealedResultToKvStorePluginEnabledSet(env),
+      isSet: isSaveToKvStorePluginEnabledSet(env),
       required: false,
-      value: env.SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED,
+      value: env.SAVE_TO_KV_STORE_PLUGIN_ENABLED,
       showValue: true,
     },
     env
   )
-  if (usingDeprecatedKey) {
-    sealedResultItem = sealedResultItem.replace(
-      '</li>',
-      ` ⚠️ Value is read from deprecated <code>${saveToKvStorePluginEnabledVarName}</code> key. Please migrate to <code>${saveSealedResultToKvStorePluginEnabledVarName}</code>.</li>`
-    )
-  }
-  result += sealedResultItem
 
   const { resultsKvStoreName } = getNamesForStores()
-  if (isOpenClientResponseEnabled(env) && isSaveSealedResultToKvStorePluginEnabled(env)) {
-    const errorMessage = await buildKVStoreCheckMessage(
-      saveSealedResultToKvStorePluginEnabledVarName,
-      resultsKvStoreName
-    )
+  if (isSaveToKvStorePluginEnabled(env)) {
+    const errorMessage = await buildKVStoreCheckMessage(saveToKvStorePluginEnabledVarName, resultsKvStoreName)
     if (errorMessage) {
       result += `<li>${errorMessage}</li>`
     }

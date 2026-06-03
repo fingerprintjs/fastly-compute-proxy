@@ -145,12 +145,6 @@ async function createConfigStore(service_id: string) {
     item_key: 'AGENT_SCRIPT_DOWNLOAD_PATH',
     item_value: process.env.AGENT_SCRIPT_DOWNLOAD_PATH ?? 'agent',
   })
-  await configStoreItemClient.createConfigStoreItem({
-    config_store_id: configStore.id,
-    item_key: 'OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED',
-    item_value: 'false',
-  })
-
   return configStore
 }
 

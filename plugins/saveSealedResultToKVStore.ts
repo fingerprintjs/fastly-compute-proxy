@@ -4,24 +4,20 @@ import { KVStore } from 'fastly:kv-store'
 import { ProcessSealedResultContext, getEventId } from '../src/utils/registerPlugin'
 import { getConfigStore } from '../src/utils/getStore'
 import { env } from 'fastly:env'
-import { saveSealedResultToKvStorePluginEnabledVarName, saveToKvStorePluginEnabledVarName } from '../src/env'
+import { saveToKvStorePluginEnabledVarName } from '../src/env'
 
 export async function saveSealedResultToKVStore(context: ProcessSealedResultContext) {
   const configStore = getConfigStore()
-  const isPluginEnabled =
-    configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) === 'true' ||
-    configStore?.get(saveToKvStorePluginEnabledVarName) === 'true'
+  const isPluginEnabled = configStore?.get(saveToKvStorePluginEnabledVarName) === 'true'
 
   if (!isPluginEnabled) {
-    console.log(`Plugin '${saveSealedResultToKvStorePluginEnabledVarName}' is not enabled`)
+    console.log(`Plugin '${saveToKvStorePluginEnabledVarName}' is not enabled`)
     return
   }
 
   const eventId = getEventId(context.event)
   if (!eventId) {
-    console.log(
-      `[${saveSealedResultToKvStorePluginEnabledVarName}] Plugin Error: event ID is undefined in the event response.`
-    )
+    console.log(`[${saveToKvStorePluginEnabledVarName}] Plugin Error: event ID is undefined in the event response.`)
     return
   }
   const serviceId = env('FASTLY_SERVICE_ID')

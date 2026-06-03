@@ -25,7 +25,9 @@ export async function processSealedResultResponse(
     throw new Error('Decryption key not found in secret store')
   }
   const event = unsealData(sealedResult, decryptionKey)
-  const filteredPlugins = plugins.filter((t) => t.type === 'processSealedResult')
+  const filteredPlugins = plugins.filter(
+    (t) => t.type === 'processSealedResult' || t.type === 'processOpenClientResponse'
+  )
   for (const filteredPlugin of filteredPlugins) {
     try {
       const clonedHttpResponse = cloneFastlyResponse(bodyBytes, response)
