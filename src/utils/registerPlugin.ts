@@ -34,18 +34,14 @@ export type ProcessOpenClientResponsePluginFunction = ProcessSealedResultPluginF
 
 export type ProcessSealedResultPlugin = {
   name: string
-  type: 'processSealedResult'
+  type: 'processSealedResult' | 'processOpenClientResponse'
   callback: ProcessSealedResultPluginFunction
 }
 
 /**
  * @deprecated Use {@link ProcessSealedResultPlugin} instead.
  */
-export type ProcessOpenClientResponsePlugin = {
-  name: string
-  type: 'processOpenClientResponse'
-  callback: ProcessOpenClientResponsePluginFunction
-}
+export type ProcessOpenClientResponsePlugin = ProcessSealedResultPlugin
 
-export type Plugin = ProcessSealedResultPlugin | ProcessOpenClientResponsePlugin
+export type Plugin = ProcessSealedResultPlugin
 export const plugins: Plugin[] = loadedPlugins
