@@ -8,14 +8,12 @@ export function getNamesForStores() {
   const storeNamePrefix = process.env.STORE_NAME_PREFIX
   const configStoreName = `${storeNamePrefix}_Config_Store_${serviceId}`
   const secretStoreName = `${storeNamePrefix}_Secret_Store_${serviceId}`
-  const resultsKvStoreName = `Fingerprint_Results_${serviceId}`
-  const eventsKvStoreName = `Fingerprint_Events_${serviceId}`
+  const kvStoreName = `Fingerprint_Results_${serviceId}`
 
   return {
     configStoreName,
     secretStoreName,
-    resultsKvStoreName,
-    eventsKvStoreName,
+    kvStoreName,
   }
 }
 export function getConfigStore() {
@@ -28,6 +26,7 @@ export function getSecretStore() {
   return new SecretStore(secretStoreName)
 }
 
-export function getBuiltinKVStore(storeName: string) {
-  return new KVStore(storeName)
+export function getBuiltinKVStore() {
+  const { kvStoreName } = getNamesForStores()
+  return new KVStore(kvStoreName)
 }

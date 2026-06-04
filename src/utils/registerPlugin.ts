@@ -7,16 +7,6 @@ export type ProcessOpenClientResponseContext = {
   httpResponse: Response
 }
 
-export type ProcessSealedResultContext = {
-  event: EventResponse | Event | null
-  httpResponse: Response
-}
-
-export type ProcessIdentificationResponseContext = {
-  response: Record<string, unknown>
-  httpResponse: Response
-}
-
 export function isV4Event(event: EventResponse | Event | null): event is Event {
   return event != null && 'event_id' in event
 }
@@ -31,37 +21,13 @@ export function getEventId(event: EventResponse | Event | null): string | undefi
   return event.products?.identification?.data?.requestId
 }
 
-export type ProcessSealedResultPluginFunction = (context: ProcessSealedResultContext) => void | Promise<void>
-/**
- * @deprecated Use {@link ProcessSealedResultPluginFunction} or {@link ProcessIdentificationResponsePluginFunction} instead.
- */
-export type ProcessOpenClientResponsePluginFunction = (
-  context: ProcessOpenClientResponseContext
-) => void | Promise<void>
-export type ProcessIdentificationResponsePluginFunction = (
-  context: ProcessIdentificationResponseContext
-) => void | Promise<void>
+export type ProcessUnsealedDataPluginFunction = (context: ProcessOpenClientResponseContext) => void | Promise<void>
 
-export type ProcessSealedResultPlugin = {
-  name: string
-  type: 'processSealedResult'
-  callback: ProcessSealedResultPluginFunction
-}
-
-/**
- * @deprecated Use {@link ProcessSealedResultPlugin} or {@link ProcessIdentificationResponsePlugin} instead.
- */
 export type ProcessOpenClientResponsePlugin = {
   name: string
   type: 'processOpenClientResponse'
-  callback: ProcessOpenClientResponsePluginFunction
+  callback: ProcessUnsealedDataPluginFunction
 }
 
-export type ProcessIdentificationResponsePlugin = {
-  name: string
-  type: 'processIdentificationResponse'
-  callback: ProcessIdentificationResponsePluginFunction
-}
-
-export type Plugin = ProcessSealedResultPlugin | ProcessOpenClientResponsePlugin | ProcessIdentificationResponsePlugin
+export type Plugin = ProcessOpenClientResponsePlugin
 export const plugins: Plugin[] = loadedPlugins
