@@ -1,4 +1,4 @@
-import { IntegrationEnv, isDecryptionKeySet, isOpenClientResponseEnabled, isProxySecretSet } from '../env'
+import { IntegrationEnv, isOpenClientResponseEnabled, isProxySecretSet } from '../env'
 import {
   addProxyIntegrationHeaders,
   addTrafficMonitoringSearchParamsForVisitorIdRequest,
