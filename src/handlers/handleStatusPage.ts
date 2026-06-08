@@ -11,19 +11,15 @@ import {
   decryptionKeyVarName,
   isOpenClientResponseEnabled,
   isDecryptionKeySet,
-  saveSealedResultToKvStorePluginEnabledVarName,
   saveToKvStorePluginEnabledVarName,
-  isSaveSealedResultToKvStorePluginEnabled,
-  isSaveSealedResultToKvStorePluginEnabledSet,
-  saveEventToKvStorePluginEnabledVarName,
-  isSaveEventToKvStorePluginEnabled,
-  isSaveEventToKvStorePluginEnabledSet,
+  isSaveToKvStorePluginEnabled,
+  isSaveToKvStorePluginEnabledSet,
   getDecryptionKey,
   checkKVStoreAvailability,
 } from '../env'
 import packageJson from '../../package.json'
 import { env } from 'fastly:env'
-import { getConfigStore, getNamesForStores } from '../utils/getStore'
+import { getNamesForStores } from '../utils/getStore'
 import { Backend } from 'fastly:backend'
 
 function generateNonce() {
@@ -147,13 +143,14 @@ function buildConfigurationItem(
   return `<li><code>${label}</code> (${required ? 'Required' : 'Optional'}) is ${statusText}.${extraMessage}</li>`
 }
 
-async function buildKVStoreCheckMessage(pluginVarName: string, kvStoreName: string): Promise<string> {
-  const isKVStoreAvailable = await checkKVStoreAvailability(kvStoreName)
+async function buildKVStoreCheckMessage(): Promise<string> {
+  const isKVStoreAvailable = await checkKVStoreAvailability()
   if (isKVStoreAvailable) {
     return ''
   }
 
-  return `⚠️You have <code>${pluginVarName}</code> enabled, but we couldn't reach your KVStore named <code>${kvStoreName}</code>. <code>${pluginVarName}</code> related plugin is not working correctly.`
+  const { kvStoreName } = getNamesForStores()
+  return `⚠️You have <code>${saveToKvStorePluginEnabledVarName}</code> enabled, but we couldn't reach your KVStore named <code>${kvStoreName}</code>. <code>${saveToKvStorePluginEnabledVarName}</code> related plugin is not working correctly.`
 }
 
 function createEnvVarsInformationElement(env: IntegrationEnv): string {
@@ -198,17 +195,6 @@ function createEnvVarsInformationElement(env: IntegrationEnv): string {
   return result
 }
 
-function isUsingDeprecatedSaveToKvStoreKey(): boolean {
-  try {
-    const configStore = getConfigStore()
-    const hasNewKey = configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) != null
-    const hasOldKey = configStore?.get(saveToKvStorePluginEnabledVarName) != null
-    return !hasNewKey && hasOldKey
-  } catch {
-    return false
-  }
-}
-
 async function createPluginConfigurationElement(env: IntegrationEnv): Promise<string> {
   let result = ''
   result += `<p style="display: block">🔌 Plugin configuration values:</p>`
@@ -236,48 +222,19 @@ async function createPluginConfigurationElement(env: IntegrationEnv): Promise<st
     env
   )
 
-  const usingDeprecatedKey = isUsingDeprecatedSaveToKvStoreKey()
-  let sealedResultItem = buildConfigurationItem(
-    saveSealedResultToKvStorePluginEnabledVarName,
-    {
-      isSet: isSaveSealedResultToKvStorePluginEnabledSet(env),
-      required: false,
-      value: env.SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED,
-      showValue: true,
-    },
-    env
-  )
-  if (usingDeprecatedKey) {
-    sealedResultItem = sealedResultItem.replace(
-      '</li>',
-      ` ⚠️ Value is read from deprecated <code>${saveToKvStorePluginEnabledVarName}</code> key. Please migrate to <code>${saveSealedResultToKvStorePluginEnabledVarName}</code>.</li>`
-    )
-  }
-  result += sealedResultItem
-
   result += buildConfigurationItem(
-    saveEventToKvStorePluginEnabledVarName,
+    saveToKvStorePluginEnabledVarName,
     {
-      isSet: isSaveEventToKvStorePluginEnabledSet(env),
+      isSet: isSaveToKvStorePluginEnabledSet(env),
       required: false,
-      value: env.SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED,
+      value: env.SAVE_TO_KV_STORE_PLUGIN_ENABLED,
       showValue: true,
     },
     env
   )
 
-  const { resultsKvStoreName, eventsKvStoreName } = getNamesForStores()
-  if (isOpenClientResponseEnabled(env) && isSaveSealedResultToKvStorePluginEnabled(env)) {
-    const errorMessage = await buildKVStoreCheckMessage(
-      saveSealedResultToKvStorePluginEnabledVarName,
-      resultsKvStoreName
-    )
-    if (errorMessage) {
-      result += `<li>${errorMessage}</li>`
-    }
-  }
-  if (isSaveEventToKvStorePluginEnabled(env)) {
-    const errorMessage = await buildKVStoreCheckMessage(saveEventToKvStorePluginEnabledVarName, eventsKvStoreName)
+  if (isOpenClientResponseEnabled(env) && isSaveToKvStorePluginEnabled(env)) {
+    const errorMessage = await buildKVStoreCheckMessage()
     if (errorMessage) {
       result += `<li>${errorMessage}</li>`
     }

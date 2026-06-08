@@ -6,8 +6,7 @@ export type IntegrationEnv = {
   PROXY_SECRET: string | null
   OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED: string | null
   DECRYPTION_KEY: string | null
-  SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED: string | null
-  SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: string | null
+  SAVE_TO_KV_STORE_PLUGIN_ENABLED: string | null
 }
 
 const Defaults: IntegrationEnv = {
@@ -16,8 +15,7 @@ const Defaults: IntegrationEnv = {
   PROXY_SECRET: null,
   OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED: 'false',
   DECRYPTION_KEY: null,
-  SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED: 'false',
-  SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: 'false',
+  SAVE_TO_KV_STORE_PLUGIN_ENABLED: 'false',
 }
 
 function getVarOrDefault(
@@ -68,24 +66,12 @@ export const isOpenClientResponseSet = (env: IntegrationEnv) =>
 export const isOpenClientResponseEnabled = (env: IntegrationEnv) =>
   env[openClientResponseVarName]?.toLowerCase() === 'true'
 
-/**
- * @deprecated This config store entry will be removed in later versions. Use SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED key for the entry.
- */
 export const saveToKvStorePluginEnabledVarName = 'SAVE_TO_KV_STORE_PLUGIN_ENABLED'
-export const saveSealedResultToKvStorePluginEnabledVarName = 'SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED'
-export const isSaveSealedResultToKvStorePluginEnabledSet = (env: IntegrationEnv) =>
-  env.SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED === 'true' ||
-  env.SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED === 'false'
+export const isSaveToKvStorePluginEnabledSet = (env: IntegrationEnv) =>
+  env.SAVE_TO_KV_STORE_PLUGIN_ENABLED === 'true' || env.SAVE_TO_KV_STORE_PLUGIN_ENABLED === 'false'
 
-export const isSaveSealedResultToKvStorePluginEnabled = (env: IntegrationEnv) =>
-  env[saveSealedResultToKvStorePluginEnabledVarName]?.toLowerCase() === 'true'
-
-export const saveEventToKvStorePluginEnabledVarName = 'SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED'
-export const isSaveEventToKvStorePluginEnabledSet = (env: IntegrationEnv) =>
-  env.SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED === 'true' || env.SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED === 'false'
-
-export const isSaveEventToKvStorePluginEnabled = (env: IntegrationEnv) =>
-  env[saveEventToKvStorePluginEnabledVarName]?.toLowerCase() === 'true'
+export const isSaveToKvStorePluginEnabled = (env: IntegrationEnv) =>
+  env[saveToKvStorePluginEnabledVarName]?.toLowerCase() === 'true'
 
 export function getProxySecret(env: IntegrationEnv): string | null {
   return getProxySecretVar(env)
@@ -99,9 +85,9 @@ export function getStatusPagePath(): string {
   return `/status`
 }
 
-export async function checkKVStoreAvailability(storeName: string) {
+export async function checkKVStoreAvailability() {
   try {
-    const kvStore = getBuiltinKVStore(storeName)
+    const kvStore = getBuiltinKVStore()
     const testKeyName = 'kvStoreCheck'
     await kvStore.put(testKeyName, 'true')
     const entry = await kvStore.get(testKeyName)
@@ -134,11 +120,7 @@ export async function getEnvObject(): Promise<IntegrationEnv> {
     AGENT_SCRIPT_DOWNLOAD_PATH: configStore?.get(agentScriptDownloadPathVarName) ?? null,
     GET_RESULT_PATH: configStore?.get(getResultPathVarName) ?? null,
     OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED: configStore?.get(openClientResponseVarName) ?? null,
-    SAVE_SEALED_RESULT_TO_KV_STORE_PLUGIN_ENABLED:
-      configStore?.get(saveSealedResultToKvStorePluginEnabledVarName) ??
-      configStore?.get(saveToKvStorePluginEnabledVarName) ??
-      null,
-    SAVE_EVENT_TO_KV_STORE_PLUGIN_ENABLED: configStore?.get(saveEventToKvStorePluginEnabledVarName) ?? null,
+    SAVE_TO_KV_STORE_PLUGIN_ENABLED: configStore?.get(saveToKvStorePluginEnabledVarName) ?? null,
     PROXY_SECRET: (await secretStore?.get(proxySecretVarName))?.plaintext() ?? null,
     DECRYPTION_KEY: (await secretStore?.get(decryptionKeyVarName))?.plaintext() ?? null,
   }
