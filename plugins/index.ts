@@ -1,5 +1,5 @@
 import { saveFingerprintResultToKVStore } from './saveToKVStore'
-import { Plugin } from '../src/utils/registerPlugin'
+import type { Plugin } from '../src/utils/registerPlugin'
 
 export default [
   {
