@@ -6,20 +6,9 @@ import {
   agentScriptDownloadPathVarName,
   getResultPathVarName,
   proxySecretVarName,
-  isOpenClientResponseSet,
-  openClientResponseVarName,
-  decryptionKeyVarName,
-  isOpenClientResponseEnabled,
-  isDecryptionKeySet,
-  saveToKvStorePluginEnabledVarName,
-  isSaveToKvStorePluginEnabled,
-  isSaveToKvStorePluginEnabledSet,
-  getDecryptionKey,
-  checkKVStoreAvailability,
 } from '../env'
 import packageJson from '../../package.json'
 import { env } from 'fastly:env'
-import { getNamesForStores } from '../utils/getStore'
 import { Backend } from 'fastly:backend'
 
 function generateNonce() {
@@ -64,6 +53,12 @@ function createVersionElement(): string {
 export function getBackendsInformation(): string {
   let information = ''
 
+  if (Backend.exists('fingerprint')) {
+    information += '<li>ℹ️ Fingerprint backend is configured ✅</li>'
+    return information
+  }
+
+  // backward compat: region-named backends
   const usResultBackend = Backend.exists('api.fpjs.io')
   const euResultBackend = Backend.exists('eu.api.fpjs.io')
   const apResultBackend = Backend.exists('ap.api.fpjs.io')
@@ -79,26 +74,12 @@ export function getBackendsInformation(): string {
   }
   if (supportedRegions.length === 0) {
     information +=
-      '<li>⚠️ Your integration is missing backend hosts for <a href="https://dev.fingerprint.com/docs/regions">region support</a>. Please add at least one of the backends "api.fpjs.io", "eu.api.fpjs.io", or "ap.api.fpjs.io"</li>'
+      '<li>⚠️ Your integration is missing the "fingerprint" backend. Please add a backend named "fingerprint" pointing to your regional Fingerprint API host.</li>'
   } else {
-    information += `<li>ℹ️ Integration is configured for these <a href="https://dev.fingerprint.com/docs/regions">regions</a>: <strong>${supportedRegions.join(', ')}</strong></li>`
+    information += `<li>⚠️ Deprecated: region-named backends are configured for <a href="https://dev.fingerprint.com/docs/regions">regions</a>: <strong>${supportedRegions.join(', ')}</strong>. Please migrate to a single backend named "fingerprint".</li>`
   }
 
   return information
-}
-
-function isValidBase64(str: string | null | undefined): boolean {
-  const base64Pattern = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
-
-  if (!str) {
-    return false
-  }
-
-  if (str.length % 4 !== 0) {
-    return false
-  }
-
-  return base64Pattern.test(str)
 }
 
 function createContactInformationElement(): string {
@@ -115,17 +96,13 @@ function buildConfigurationItem(
     isSet: boolean
     required: boolean
     message?: string
-    value?: string | null
-    showValue?: boolean
-  },
-  env: IntegrationEnv
+  }
 ): string {
-  const { isSet, required, value, showValue, message } = options
+  const { isSet, required, message } = options
 
   let statusText: string
   if (isSet) {
-    const valueText = showValue === true ? `<code>${value}</code>` : 'set'
-    statusText = `${valueText} ✅`
+    statusText = 'set ✅'
   } else if (required) {
     statusText = 'missing ❌'
   } else {
@@ -136,21 +113,8 @@ function buildConfigurationItem(
   if (!isSet && message) {
     extraMessage = ` ${message}`
   }
-  if (isSet && label === decryptionKeyVarName && !isValidBase64(getDecryptionKey(env))) {
-    extraMessage = ` Invalid value provided ⚠️. Please copy and paste the correct value from the dashboard.`
-  }
 
   return `<li><code>${label}</code> (${required ? 'Required' : 'Optional'}) is ${statusText}.${extraMessage}</li>`
-}
-
-async function buildKVStoreCheckMessage(): Promise<string> {
-  const isKVStoreAvailable = await checkKVStoreAvailability()
-  if (isKVStoreAvailable) {
-    return ''
-  }
-
-  const { kvStoreName } = getNamesForStores()
-  return `⚠️You have <code>${saveToKvStorePluginEnabledVarName}</code> enabled, but we couldn't reach your KVStore named <code>${kvStoreName}</code>. <code>${saveToKvStorePluginEnabledVarName}</code> related plugin is not working correctly.`
 }
 
 function createEnvVarsInformationElement(env: IntegrationEnv): string {
@@ -158,15 +122,11 @@ function createEnvVarsInformationElement(env: IntegrationEnv): string {
 
   result += '<p>🛠️ Required configuration values:</p>'
   result += '<ul>'
-  result += buildConfigurationItem(
-    proxySecretVarName,
-    {
-      isSet: isProxySecretSet(env),
-      required: true,
-      message: 'Your integration is not working correctly.',
-    },
-    env
-  )
+  result += buildConfigurationItem(proxySecretVarName, {
+    isSet: isProxySecretSet(env),
+    required: true,
+    message: 'Your integration is not working correctly.',
+  })
   result += '</ul>'
 
   result += '<p>🛠️ V3 API configuration values:</p>'
@@ -174,77 +134,20 @@ function createEnvVarsInformationElement(env: IntegrationEnv): string {
     result += '<p>⚠️ If you are not using the V3 API, these warnings can be safely ignored.</p>'
   }
   result += '<ul>'
-  result += buildConfigurationItem(
-    agentScriptDownloadPathVarName,
-    {
-      isSet: isScriptDownloadPathSet(env),
-      required: false,
-    },
-    env
-  )
-  result += buildConfigurationItem(
-    getResultPathVarName,
-    {
-      isSet: isGetResultPathSet(env),
-      required: false,
-    },
-    env
-  )
+  result += buildConfigurationItem(agentScriptDownloadPathVarName, {
+    isSet: isScriptDownloadPathSet(env),
+    required: false,
+  })
+  result += buildConfigurationItem(getResultPathVarName, {
+    isSet: isGetResultPathSet(env),
+    required: false,
+  })
   result += '</ul>'
 
   return result
 }
 
-async function createPluginConfigurationElement(env: IntegrationEnv): Promise<string> {
-  let result = ''
-  result += `<p style="display: block">🔌 Plugin configuration values:</p>`
-
-  result += '<ul>'
-  result += buildConfigurationItem(
-    openClientResponseVarName,
-    {
-      isSet: isOpenClientResponseSet(env),
-      required: false,
-      value: env.OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED,
-      showValue: true,
-      message: 'Open client response plugins are disabled.',
-    },
-    env
-  )
-  result += buildConfigurationItem(
-    decryptionKeyVarName,
-    {
-      isSet: isDecryptionKeySet(env),
-      required: false,
-      message:
-        'Open client response plugins are not working correctly. This is required if you want to use Open client response plugins.',
-    },
-    env
-  )
-
-  result += buildConfigurationItem(
-    saveToKvStorePluginEnabledVarName,
-    {
-      isSet: isSaveToKvStorePluginEnabledSet(env),
-      required: false,
-      value: env.SAVE_TO_KV_STORE_PLUGIN_ENABLED,
-      showValue: true,
-    },
-    env
-  )
-
-  if (isOpenClientResponseEnabled(env) && isSaveToKvStorePluginEnabled(env)) {
-    const errorMessage = await buildKVStoreCheckMessage()
-    if (errorMessage) {
-      result += `<li>${errorMessage}</li>`
-    }
-  }
-  result += '</ul>'
-
-  return result
-}
-
-async function buildBody(env: IntegrationEnv, styleNonce: string): Promise<string> {
+function buildBody(env: IntegrationEnv, styleNonce: string): string {
   let body = `
   <html lang='en-US'>
   <head>
@@ -288,7 +191,6 @@ async function buildBody(env: IntegrationEnv, styleNonce: string): Promise<strin
   body += createVersionElement()
   body += createEnvVarsInformationElement(env)
   body += createContactInformationElement()
-  body += await createPluginConfigurationElement(env)
 
   body += `
   </div>
@@ -305,7 +207,7 @@ export async function handleStatusPage(request: Request, env: IntegrationEnv): P
 
   const styleNonce = generateNonce()
   const headers = buildHeaders(styleNonce)
-  const body = await buildBody(env, styleNonce)
+  const body = buildBody(env, styleNonce)
 
   return new Response(body, {
     status: 200,

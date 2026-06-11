@@ -18,17 +18,14 @@
     "@fingerprintjs/prettier-config-dx-team": "^0.2.0",
     "@fingerprintjs/tsconfig-dx-team": "^0.0.2",
     "@jest/globals": "^30.4.1",
-    "@noble/ciphers": "^2.2.0",
     "@types/cookie": "^0.6.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.7.0",
-    "@types/pako": "^2.0.4",
     "babel-jest": "^30.4.1",
     "esbuild": "^0.24.0",
     "fastly": "^15.1.0",
     "husky": "^9.1.5",
     "jest": "^30.4.2",
-    "pako": "^2.1.0",
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
@@ -63,9 +60,5 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  },
-  "peerDependencies": {
-    "@fingerprint/node-sdk": "^7.2.0",
-    "@fingerprintjs/fingerprintjs-pro-server-api": "^5.2.0"
   }
 }

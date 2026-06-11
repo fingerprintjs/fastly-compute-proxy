@@ -37,7 +37,7 @@ describe('Catch-all (V4)', () => {
 
       expect(fetch).toHaveBeenCalledWith(
         expect.objectContaining({ method: 'GET' }),
-        expect.objectContaining({ backend: 'api.fpjs.io', cacheOverride: expect.objectContaining({ mode: 'pass' }) })
+        expect.objectContaining({ backend: 'fingerprint', cacheOverride: expect.objectContaining({ mode: 'pass' }) })
       )
     })
 
@@ -65,20 +65,6 @@ describe('Catch-all (V4)', () => {
       const url = new URL(receivedUrl)
       expect(url.searchParams.has('ii')).toBe(false)
     })
-
-    it('should forward to EU backend when region=eu', async () => {
-      const request = makeRequest(new URL('https://test/web/v4/abc123?region=eu'))
-      await handleRequest(request)
-
-      expect(fetch).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ backend: 'eu.api.fpjs.io' }))
-    })
-
-    it('should forward to AP backend when region=ap', async () => {
-      const request = makeRequest(new URL('https://test/web/v4/abc123?region=ap'))
-      await handleRequest(request)
-
-      expect(fetch).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ backend: 'ap.api.fpjs.io' }))
-    })
   })
 
   describe('POST (authorized)', () => {
@@ -88,7 +74,7 @@ describe('Catch-all (V4)', () => {
 
       expect(fetch).toHaveBeenCalledWith(
         expect.objectContaining({ method: 'POST' }),
-        expect.objectContaining({ backend: 'api.fpjs.io' })
+        expect.objectContaining({ backend: 'fingerprint' })
       )
     })
 

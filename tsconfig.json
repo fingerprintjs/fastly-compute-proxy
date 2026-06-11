@@ -16,7 +16,6 @@
     "./build.ts",
     "./src/**/*.ts",
     "./scripts/**/*.ts",
-    "./plugins/**/*.ts",
     "./test/**/*.ts",
   ],
   "exclude": ["node_modules"],

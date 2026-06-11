@@ -1,4 +1,4 @@
-import { IntegrationEnv, isOpenClientResponseEnabled, isProxySecretSet } from '../env'
+import { IntegrationEnv, isProxySecretSet } from '../env'
 import {
   addProxyIntegrationHeaders,
   addTrafficMonitoringSearchParamsForVisitorIdRequest,
@@ -6,10 +6,7 @@ import {
   createFallbackErrorResponse,
 } from '../utils'
 import { getFilteredCookies } from '../utils/cookie'
-import { processOpenClientResponse } from '../utils/processOpenClientResponse'
-import { cloneFastlyResponse } from '../utils/cloneFastlyResponse'
 import { getIngressBackendByRegion } from '../utils/getIngressBackendByRegion'
-import { decompressBody } from '../utils/decompressBody'
 import { CacheOverride } from 'fastly:cache-override'
 
 function isMethodAuthorized(method: string): boolean {
@@ -38,36 +35,7 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
   console.log(`sending ingress request to ${url.toString()}...`)
   const response = await fetch(request, { backend: getIngressBackendByRegion(url) })
 
-  if (response.status < 200 || response.status > 299) {
-    console.log(
-      `Response status is non-successful (HTTP ${response.status}). Skipping plugins and returning the response.`
-    )
-    return response
-  }
-
-  const bodyBytes = await response.arrayBuffer()
-
-  let parsedBody: Record<string, unknown> | null = null
-  try {
-    const contentEncoding = response.headers.get('content-encoding')
-    const responseBody = decompressBody(bodyBytes, contentEncoding)
-    parsedBody = JSON.parse(responseBody)
-  } catch (e) {
-    console.log(`Error occurred when parsing response body: ${e}. Skipping plugins.`)
-  }
-
-  if (parsedBody && isOpenClientResponseEnabled(env)) {
-    Promise.resolve().then(() => {
-      processOpenClientResponse(parsedBody, bodyBytes, response, env).catch((e) =>
-        console.error(
-          'Make sure OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED is set to true in Config Store, Decryption Key is added to Secret Store, and Open Client Response is enabled for your Fingerprint workspace: ',
-          e
-        )
-      )
-    })
-  }
-
-  return cloneFastlyResponse(bodyBytes, response)
+  return response
 }
 
 function makeUnauthorizedRequest(receivedRequest: Request, url: URL): Promise<Response> {

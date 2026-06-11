@@ -11,12 +11,6 @@ importers:
       '@fastly/js-compute':
         specifier: ^3.42.0
         version: 3.42.0(typescript@5.9.3)
-      '@fingerprint/node-sdk':
-        specifier: ^7.2.0
-        version: 7.2.0
-      '@fingerprintjs/fingerprintjs-pro-server-api':
-        specifier: ^5.2.0
-        version: 5.2.0
       cookie:
         specifier: 0.7.0
         version: 0.7.0
@@ -57,9 +51,6 @@ importers:
       '@jest/globals':
         specifier: ^30.4.1
         version: 30.4.1
-      '@noble/ciphers':
-        specifier: ^2.2.0
-        version: 2.2.0
       '@types/cookie':
         specifier: ^0.6.0
         version: 0.6.0
@@ -69,9 +60,6 @@ importers:
       '@types/node':
         specifier: ^22.7.0
         version: 22.7.9
-      '@types/pako':
-        specifier: ^2.0.4
-        version: 2.0.4
       babel-jest:
         specifier: ^30.4.1
         version: 30.4.1(@babel/core@7.29.0)
@@ -87,9 +75,6 @@ importers:
       jest:
         specifier: ^30.4.2
         version: 30.4.2(@types/node@22.7.9)(ts-node@10.9.2(@types/node@22.7.9)(typescript@5.9.3))
-      pako:
-        specifier: ^2.1.0
-        version: 2.1.0
       ts-jest:
         specifier: ^29.4.9
         version: 29.4.9(@babel/core@7.29.0)(@jest/transform@30.4.1)(@jest/types@30.4.1)(babel-jest@30.4.1(@babel/core@7.29.0))(esbuild@0.24.0)(jest-util@30.4.1)(jest@30.4.2(@types/node@22.7.9)(ts-node@10.9.2(@types/node@22.7.9)(typescript@5.9.3)))(typescript@5.9.3)
@@ -1223,10 +1208,6 @@ packages:
       typescript:
         optional: true
 
-  '@fingerprint/node-sdk@7.2.0':
-    resolution: {integrity: sha512-v3VMqr6QFuZShOs+rIRE3kOKKHlubvw7xO0RkQFMWEYZa/OOQVt/axm+38nTUTXI8wHLJq9tn98BK+NBKxNVjw==}
-    engines: {node: '>=18.17.0'}
-
   '@fingerprintjs/changesets-changelog-format@0.2.0':
     resolution: {integrity: sha512-1jI+J1r8OKUtjlFfQW4bmQ8u4E1097zPaKw5fUCgAcahLPgwW4Ae+Keoc253CSyyaKgTu2v/wniUGchmPaXAsg==}
 
@@ -1240,10 +1221,6 @@ packages:
     resolution: {integrity: sha512-Yet9e0dDGmAhMsXnnRWbvTAWLlA2qWGvsOBnRscZtlJnv/Xm4xzurR4C4bqPBcX3rVZkedv9dBTLW3t/wRY0mA==}
     peerDependencies:
       prettier: '>=3'
-
-  '@fingerprintjs/fingerprintjs-pro-server-api@5.2.0':
-    resolution: {integrity: sha512-o53t3fVO2sC3h3WFxniu9Pw3QZYCXnkSz4vOZLzh9YtiyWf3JGV8ejN7YEnwHWM+k6uMjVhqHOpDpOXIsCEHfA==}
-    engines: {node: '>=18.17.0'}
 
   '@fingerprintjs/prettier-config-dx-team@0.2.0':
     resolution: {integrity: sha512-fbtRuqF8YI4SKjvv9SQ2FoQxoTp4drKN15vXkhi2/SimC5ALpz7SFh1S0jbfmjM/rvDJ/z2x+sGFpp9ZsQZ6vg==}
@@ -1513,10 +1490,6 @@ packages:
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
-  '@noble/ciphers@2.2.0':
-    resolution: {integrity: sha512-Z6pjIZ/8IJcCGzb2S/0Px5J81yij85xASuk1teLNeg75bfT07MV3a/O2Mtn1I2se43k3lkVEcFaR10N4cgQcZA==}
-    engines: {node: '>= 20.19.0'}
-
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -1600,9 +1573,6 @@ packages:
 
   '@types/node@22.7.9':
     resolution: {integrity: sha512-jrTfRC7FM6nChvU7X2KqcrgquofrWLFDeYC1hKfwNWomVvrn7JIksqf344WN2X/y8xrgqBd2dJATZV4GbatBfg==}
-
-  '@types/pako@2.0.4':
-    resolution: {integrity: sha512-VWDCbrLeVXJM9fihYodcLiIv0ku+AlOa/TQ1SvYOaBuyrSKgEcro95LJyIsJ4vSo6BXIxOKxiJAat04CmST9Fw==}
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -3049,9 +3019,6 @@ packages:
 
   package-manager-detector@0.2.11:
     resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
-
-  pako@2.1.0:
-    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -4860,8 +4827,6 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  '@fingerprint/node-sdk@7.2.0': {}
-
   '@fingerprintjs/changesets-changelog-format@0.2.0':
     dependencies:
       '@changesets/types': 6.1.0
@@ -4886,8 +4851,6 @@ snapshots:
       - '@types/eslint'
       - supports-color
       - typescript
-
-  '@fingerprintjs/fingerprintjs-pro-server-api@5.2.0': {}
 
   '@fingerprintjs/prettier-config-dx-team@0.2.0':
     dependencies:
@@ -5238,8 +5201,6 @@ snapshots:
       '@tybys/wasm-util': 0.10.2
     optional: true
 
-  '@noble/ciphers@2.2.0': {}
-
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -5327,8 +5288,6 @@ snapshots:
   '@types/node@22.7.9':
     dependencies:
       undici-types: 6.19.8
-
-  '@types/pako@2.0.4': {}
 
   '@types/semver@7.5.8': {}
 
@@ -6951,8 +6910,6 @@ snapshots:
   package-manager-detector@0.2.11:
     dependencies:
       quansync: 0.2.11
-
-  pako@2.1.0: {}
 
   parent-module@1.0.1:
     dependencies:
