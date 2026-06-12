@@ -9,7 +9,7 @@ The proxy is now a pure passthrough - it forwards identification requests and re
 **What to remove from your Fastly Compute service configuration:**
 
 - Remove the `OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED` item from your Config Store. It is no longer read.
-- Remove the `DECRYPTION_KEY` item from your Config Store. Sealed result decryption is no longer performed.
+- Remove the `DECRYPTION_KEY` item from your Secret Store. Sealed result decryption is no longer performed.
 - Remove the `SAVE_TO_KV_STORE_PLUGIN_ENABLED` item from your Config Store. KV store saving is no longer performed.
 - Remove the KV Store resource linked to your service. It is no longer used.
 
