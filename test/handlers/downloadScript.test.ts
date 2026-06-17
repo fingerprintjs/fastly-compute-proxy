@@ -64,32 +64,8 @@ describe('Download Script', () => {
     expect(fetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        backend: 'api.fpjs.io',
+        backend: 'fingerprint',
         cacheOverride: expect.objectContaining({ mode: 'override', options: { ttl: 60 } }),
-      })
-    )
-  })
-
-  it('should send request to EU backend when region=eu', async () => {
-    const request = makeRequest(new URL('https://test/download?region=eu'))
-    await handleRequest(request)
-
-    expect(fetch).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        backend: 'eu.api.fpjs.io',
-      })
-    )
-  })
-
-  it('should send request to AP backend when region=ap', async () => {
-    const request = makeRequest(new URL('https://test/download?region=ap'))
-    await handleRequest(request)
-
-    expect(fetch).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        backend: 'ap.api.fpjs.io',
       })
     )
   })

@@ -145,11 +145,6 @@ async function createConfigStore(service_id: string) {
     item_key: 'AGENT_SCRIPT_DOWNLOAD_PATH',
     item_value: process.env.AGENT_SCRIPT_DOWNLOAD_PATH ?? 'agent',
   })
-  await configStoreItemClient.createConfigStoreItem({
-    config_store_id: configStore.id,
-    item_key: 'OPEN_CLIENT_RESPONSE_PLUGINS_ENABLED',
-    item_value: 'false',
-  })
 
   return configStore
 }
@@ -161,25 +156,7 @@ async function createBackends(service_id: string, version_id: number) {
     version_id,
     address: process.env.FPJS_BACKEND_URL ?? 'api.fpjs.io',
     override_host: process.env.FPJS_BACKEND_URL ?? 'api.fpjs.io',
-    name: 'api.fpjs.io',
-    port: 443,
-    ssl_check_cert: false,
-  })
-  await client.createBackend({
-    service_id,
-    version_id,
-    address: process.env.FPJS_BACKEND_URL ? `eu.${process.env.FPJS_BACKEND_URL}` : 'eu.api.fpjs.io',
-    override_host: process.env.FPJS_BACKEND_URL ? `eu.${process.env.FPJS_BACKEND_URL}` : 'eu.api.fpjs.io',
-    name: 'eu.api.fpjs.io',
-    port: 443,
-    ssl_check_cert: false,
-  })
-  await client.createBackend({
-    service_id,
-    version_id,
-    address: process.env.FPJS_BACKEND_URL ? `ap.${process.env.FPJS_BACKEND_URL}` : 'ap.api.fpjs.io',
-    override_host: process.env.FPJS_BACKEND_URL ? `ap.${process.env.FPJS_BACKEND_URL}` : 'ap.api.fpjs.io',
-    name: 'ap.api.fpjs.io',
+    name: 'fingerprint',
     port: 443,
     ssl_check_cert: false,
   })

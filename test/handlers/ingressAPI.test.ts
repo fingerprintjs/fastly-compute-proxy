@@ -35,13 +35,13 @@ describe('Browser Cache', () => {
     requestHeaders = new Headers()
   })
 
-  it('should send request to backend fpjs with GET method', async () => {
+  it('should send request to backend with GET method', async () => {
     const request = makeRequest(new URL('https://test/result'))
     await handleRequest(request)
 
     expect(fetch).toHaveBeenCalledWith(
       expect.objectContaining({ method: 'GET' }),
-      expect.objectContaining({ backend: 'api.fpjs.io', cacheOverride: expect.objectContaining({ mode: 'pass' }) })
+      expect.objectContaining({ backend: 'fingerprint', cacheOverride: expect.objectContaining({ mode: 'pass' }) })
     )
   })
 
@@ -88,13 +88,13 @@ describe('Ingress', () => {
     requestHeaders = new Headers()
   })
 
-  it('should call fpjs with method POST', async () => {
+  it('should call backend with method POST', async () => {
     const request = makeRequest(new URL('https://test/result'), { method: 'POST' })
     await handleRequest(request)
 
     expect(fetch).toHaveBeenCalledWith(
       expect.objectContaining({ method: 'POST' }),
-      expect.objectContaining({ backend: 'api.fpjs.io' })
+      expect.objectContaining({ backend: 'fingerprint' })
     )
   })
 
