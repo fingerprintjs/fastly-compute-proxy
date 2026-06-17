@@ -24,19 +24,19 @@ The Fastly Compute Proxy Integration is responsible for proxying identification 
 
 * **Integration in Beta**: Please report any issues to our [support team](https://fingerprint.com/support/).
 
-* **Limited to Enterprise customers**: At this point, this proxy integration is accessible and exclusively supported for customers on the  **Enterprise** Plan. Other customers are encouraged to use [Custom subdomain setup](https://dev.fingerprint.com/docs/custom-subdomain-setup) or [Cloudflare Proxy Integration](https://dev.fingerprint.com/docs/cloudflare-integration).
+* **Limited to Enterprise customers**: At this point, this proxy integration is accessible and exclusively supported for customers on the  **Enterprise** Plan. Other customers are encouraged to use [Custom subdomain setup](https://docs.fingerprint.com/docs/custom-subdomain-setup) or [Cloudflare Proxy Integration](https://docs.fingerprint.com/docs/cloudflare-integration).
 
 * **Manual updates occasionally required**: The underlying data contract in the identification logic can change to keep up with browser updates. Using the Fastly Compute Proxy Integration might require occasional manual updates on your side. Ignoring these updates will lead to lower accuracy or service disruption.
 
 ## Getting started
 
-This is a quick overview of the installation setup. For detailed step-by-step instructions, see the [Fastly Compute proxy integration guide in our documentation](https://dev.fingerprint.com/docs/fastly-compute-proxy-integration).
+This is a quick overview of the installation setup. For detailed step-by-step instructions, see the [Fastly Compute proxy integration guide in our documentation](https://docs.fingerprint.com/docs/fastly-compute-proxy-integration).
 
 1. Go to the Fingerprint Dashboard > [**API Keys**](https://dashboard.fingerprint.com/api-keys) and click **Create Proxy Key** to create a proxy secret. You will use it later to authenticate your requests to Fingerprint APIs.
 
 2. [Create an empty Compute Service](https://docs.fastly.com/en/guides/working-with-compute-services#creating-a-new-compute-service) in your Fastly account.
 
-3. Add a backend named `fingerprint` to your Compute service, pointing to the [regional Fingerprint API host](https://dev.fingerprint.com/docs/regions) for your workspace:
+3. Add a backend named `fingerprint` to your Compute service, pointing to the [regional Fingerprint API host](https://docs.fingerprint.com/docs/regions) for your workspace:
 
    | Region       | Host              |
    | ------------ | ----------------- |
@@ -54,7 +54,7 @@ This is a quick overview of the installation setup. For detailed step-by-step in
 
 5. Go to [Releases](https://github.com/fingerprintjs/fastly-compute-proxy/releases) to download the latest `fingerprint-fastly-compute-proxy-integration.tar.gz` package file.
 6. Upload package to your Fastly Compute Service's **Package**.
-7. Configure the Fingerprint [JavaScript Agent](https://dev.fingerprint.com/docs/install-the-javascript-agent#configuring-the-agent) on your website:
+7. Configure the Fingerprint [JavaScript Agent](https://docs.fingerprint.com/docs/install-the-javascript-agent#configuring-the-agent) on your website:
    ```javascript
    import * as Fingerprint from '@fingerprint/agent';
 
@@ -65,9 +65,9 @@ This is a quick overview of the installation setup. For detailed step-by-step in
    });
    ```
 
-   > **JavaScript agent v3**: If you are still using the v3 agent (`@fingerprintjs/fingerprintjs-pro`), you need to also [create a Config store](https://docs.fastly.com/en/guides/working-with-config-stores#creating-a-config-store) named `Fingerprint_Compute_Config_Store_<SERVICE_ID>` with `AGENT_SCRIPT_DOWNLOAD_PATH` and `GET_RESULT_PATH` entries, and configure `scriptUrlPattern` and `endpoint` accordingly. See the [v3 to v4 migration guide](https://dev.fingerprint.com/docs/fastly-compute-v3-to-v4-migration-guide) for details.
+   > **JavaScript agent v3**: If you are still using the v3 agent (`@fingerprintjs/fingerprintjs-pro`), you need to also [create a Config store](https://docs.fastly.com/en/guides/working-with-config-stores#creating-a-config-store) named `Fingerprint_Compute_Config_Store_<SERVICE_ID>` with `AGENT_SCRIPT_DOWNLOAD_PATH` and `GET_RESULT_PATH` entries, and configure `scriptUrlPattern` and `endpoint` accordingly. See the [v3 to v4 migration guide](https://docs.fingerprint.com/docs/fastly-compute-v3-to-v4-migration-guide) for details.
 
-See the [Fastly Compute proxy integration guide](https://dev.fingerprint.com/docs/fastly-compute-proxy-integration#step-3-configure-the-fingerprint-client-agent-to-use-your-service) in our documentation for more details.
+See the [Fastly Compute proxy integration guide](https://docs.fingerprint.com/docs/fastly-compute-proxy-integration#step-3-configure-the-fingerprint-client-agent-to-use-your-service) in our documentation for more details.
 
 ## Feedback and support
 
