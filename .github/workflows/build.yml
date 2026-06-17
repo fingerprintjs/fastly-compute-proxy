@@ -5,6 +5,40 @@ on:
       - main
   pull_request:
 jobs:
+  test-paths-changed-action:
+    name: Test paths-changed action
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: match
+        uses: fingerprintjs/dx-team-toolkit/.github/actions/paths-changed@claude/keen-allen-irztgn
+        with:
+          paths: |
+            .github/workflows/**
+
+      - id: no-match
+        uses: fingerprintjs/dx-team-toolkit/.github/actions/paths-changed@claude/keen-allen-irztgn
+        with:
+          paths: |
+            this/path/does/not/exist/**
+
+      - name: Assert outputs
+        shell: bash
+        run: |
+          echo "match.changed=${{ steps.match.outputs.changed }}"
+          echo "no-match.changed=${{ steps.no-match.outputs.changed }}"
+          if [ "${{ steps.match.outputs.changed }}" != "true" ]; then
+            echo "::error::Expected workflow path to match"
+            exit 1
+          fi
+          if [ "${{ steps.no-match.outputs.changed }}" != "false" ]; then
+            echo "::error::Expected nonexistent path not to match"
+            exit 1
+          fi
+
   build-and-check:
     name: Build project and run CI checks
     uses: fingerprintjs/dx-team-toolkit/.github/workflows/build-typescript-project.yml@v1
