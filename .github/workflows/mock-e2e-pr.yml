@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: changes
-        uses: fingerprintjs/dx-team-toolkit/.github/actions/paths-changed@main
+        uses: fingerprintjs/dx-team-toolkit/.github/actions/paths-changed@v1
         with:
           paths: |
             src/**
