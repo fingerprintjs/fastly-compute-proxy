@@ -1,3 +1,14 @@
+## 0.4.0
+
+### Minor Changes
+
+- Add support for [JavaScript agent v4](https://docs.fingerprint.com/docs/install-the-javascript-agent). All requests are now forwarded to the Fingerprint API origin, so the v4 agent works out of the box without any path configuration. Compatibility with JavaScript agent v3 is maintained.
+
+  See the [migration guide](https://docs.fingerprint.com/docs/fastly-compute-v3-to-v4-migration-guide) for upgrade instructions. ([28e0bd6](https://github.com/fingerprintjs/fastly-compute-proxy/commit/28e0bd633f06d12fca45479d9b4a0c942eba9c31))
+
+- Remove the Open Client Response (OCR) plugin system, sealed result decryption, and KV store saving. ([8f1ec53](https://github.com/fingerprintjs/fastly-compute-proxy/commit/8f1ec530753207d7a4acb452c4fdb7eced30b801))
+- The integration now requires a single Fastly backend named `fingerprint` instead of region-specific backends (`api.fpjs.io`, `eu.api.fpjs.io`, `ap.api.fpjs.io`). The `fpcdn.io` CDN backend has also been removed. Region-specific backends are still supported as a fallback but are deprecated. ([8f1ec53](https://github.com/fingerprintjs/fastly-compute-proxy/commit/8f1ec530753207d7a4acb452c4fdb7eced30b801))
+
 ## 0.4.0-rc.0
 
 ### Minor Changes
