@@ -11,13 +11,14 @@ When upgrading to the JavaScript agent v4, remove the `scriptUrlPattern` and `en
 ```diff
 - const fpPromise = FingerprintJS.load({
 -   apiKey: PUBLIC_API_KEY,
--   scriptUrlPattern: "https://yourwebsite.com/AGENT_SCRIPT_DOWNLOAD_PATH?apiKey=<apiKey>&version=<version>&loaderVersion=<loaderVersion>",
--   endpoint: "https://yourwebsite.com/GET_RESULT_PATH?region=eu",
+-   scriptUrlPattern: "https://metrics.yourwebsite.com/AGENT_SCRIPT_DOWNLOAD_PATH?apiKey=<apiKey>&version=<version>&loaderVersion=<loaderVersion>",
+-   endpoint: "https://metrics.yourwebsite.com/GET_RESULT_PATH?region=eu",
 - });
 
 + const fpPromise = Fingerprint.start({
 +   apiKey: PUBLIC_API_KEY,
-+   endpoints: "https://yourwebsite.com/?region=eu",
++   endpoints: "https://metrics.yourwebsite.com/",
++   region: "eu",
 + });
 ```
 
