@@ -200,7 +200,7 @@ function buildBody(env: IntegrationEnv, styleNonce: string): string {
   return body
 }
 
-export async function handleStatusPage(request: Request, env: IntegrationEnv): Promise<Response> {
+export function handleStatusPage(request: Request, env: IntegrationEnv): Response {
   if (request.method !== 'GET') {
     return new Response(null, { status: 405 })
   }

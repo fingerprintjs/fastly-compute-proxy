@@ -17,7 +17,7 @@ function getVarOrDefault(
   defaults: IntegrationEnv
 ): (env: IntegrationEnv) => string | null {
   return function (env: IntegrationEnv): string | null {
-    return (env[variable] || defaults[variable]) as string | null
+    return env[variable] ?? defaults[variable]
   }
 }
 
@@ -33,6 +33,7 @@ export const isScriptDownloadPathSet = isVarSet(agentScriptDownloadPathVarName)
 
 export function getScriptDownloadPath(env: IntegrationEnv): string {
   const agentPathVar = getAgentPathVar(env)
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Value is guaranteed non-null
   return `/${agentPathVar}`
 }
 
@@ -42,6 +43,7 @@ export const isGetResultPathSet = isVarSet(getResultPathVarName)
 
 export function getGetResultPath(env: IntegrationEnv): string {
   const getResultPathVar = getGetResultPathVar(env)
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Value is guaranteed non-null
   return `/${getResultPathVar}(/.*)?`
 }
 

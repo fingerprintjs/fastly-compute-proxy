@@ -24,6 +24,7 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
 
   const oldCookieValue = receivedRequest.headers.get('cookie')
   const newCookieValue = getFilteredCookies(oldCookieValue, (key) => key === '_iidt')
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Fastly Request/RequestInit type mismatch with exactOptionalPropertyTypes
   const request = new Request(url, receivedRequest as RequestInit)
   if (newCookieValue) {
     request.headers.set('cookie', newCookieValue)
@@ -33,16 +34,15 @@ async function makeAuthorizedRequest(receivedRequest: Request, env: IntegrationE
   addProxyIntegrationHeaders(request.headers, receivedRequest.url, env)
 
   console.log(`sending ingress request to ${url.toString()}...`)
-  const response = await fetch(request, { backend: getIngressBackendByRegion(url) })
-
-  return response
+  return await fetch(request, { backend: getIngressBackendByRegion(url) })
 }
 
 function makeUnauthorizedRequest(receivedRequest: Request, url: URL): Promise<Response> {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Fastly Request/RequestInit type mismatch with exactOptionalPropertyTypes
   const request = new Request(url, receivedRequest as RequestInit)
   request.headers.delete('Cookie')
 
-  console.log(`sending cache request to ${url}...`)
+  console.log(`sending cache request to ${url.toString()}...`)
   return fetch(request, { backend: getIngressBackendByRegion(url), cacheOverride: new CacheOverride('pass') })
 }
 

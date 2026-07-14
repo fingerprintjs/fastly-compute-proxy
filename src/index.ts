@@ -5,14 +5,16 @@ import { returnHttpResponse } from './utils/returnHttpResponse'
 import { createFallbackErrorResponse } from './utils'
 import { setClientIp } from './utils/clientIp'
 
-addEventListener('fetch', (event) => event.respondWith(handleRequest(event)))
+addEventListener('fetch', (event) => {
+  event.respondWith(handleRequest(event))
+})
 
 export async function handleRequest(event: FetchEvent): Promise<Response> {
   setClientIp(event.client.address)
   try {
     const request = event.request
     const envObj = await getEnvObject()
-    return handleReq(request, envObj).then(returnHttpResponse)
+    return await handleReq(request, envObj).then(returnHttpResponse)
   } catch (e) {
     console.error(e)
     return createFallbackErrorResponse(event.request, 'something went wrong')

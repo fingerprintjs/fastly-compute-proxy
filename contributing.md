@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- Node 20+
-- TypeScript 5+
+- Node 24+
+- TypeScript 6+
 - [Fastly CLI](https://developer.fastly.com/learning/compute/#install-the-fastly-cli)
 
 ## Working with the Code

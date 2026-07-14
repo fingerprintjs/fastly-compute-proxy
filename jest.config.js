@@ -1,4 +1,4 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} **/
+/** @type {import('jest').Config} **/
 module.exports = {
   testRegex: '/test/.+test.ts?$',
   testEnvironment: 'node',

@@ -6,6 +6,7 @@ function makeDownloadScriptRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
   url.pathname = getAgentScriptPath(url.searchParams)
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Fastly Request/RequestInit type mismatch with exactOptionalPropertyTypes
   const newRequest = new Request(url.toString(), request as RequestInit)
   newRequest.headers.delete('Cookie')
 
