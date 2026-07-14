@@ -4,7 +4,6 @@ import { SecretStore } from 'fastly:secret-store'
 
 export function getNamesForStores() {
   const serviceId = env('FASTLY_SERVICE_ID')
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const storeNamePrefix = String(process.env.STORE_NAME_PREFIX)
   const configStoreName = `${storeNamePrefix}_Config_Store_${serviceId}`
   const secretStoreName = `${storeNamePrefix}_Secret_Store_${serviceId}`
