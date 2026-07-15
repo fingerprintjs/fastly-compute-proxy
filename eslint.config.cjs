@@ -2,7 +2,7 @@ const { defineConfig } = require('eslint/config')
 const dxTeamTypeChecked = require('@fingerprintjs/eslint-config-dx-team/type-checked')
 
 module.exports = defineConfig([
-  { ignores: ['*.js', '*.mjs'] },
+  { ignores: ['*.cjs', '*.mjs'] },
   ...dxTeamTypeChecked,
   {
     rules: {

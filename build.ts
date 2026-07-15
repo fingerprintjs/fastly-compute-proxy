@@ -7,7 +7,7 @@ build({
   entryPoints: ['./src/index.ts'],
   outdir: './build',
   bundle: true,
-  format: 'cjs',
+  format: 'esm',
   external: ['fastly:*'],
   define: { 'process.env.STORE_NAME_PREFIX': `"${configStoreNamePrefix}"` },
 }).catch((e) => {

@@ -5,5 +5,5 @@ module.exports = {
   passWithNoTests: true,
   collectCoverageFrom: ['./src/**/*.ts'],
   coverageReporters: ['lcov', 'json-summary', ['text', { file: 'coverage.txt', path: './' }]],
-  setupFiles: ['./jest.setup.js'],
+  setupFiles: ['./jest.setup.cjs'],
 }

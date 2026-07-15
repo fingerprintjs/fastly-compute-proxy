@@ -2,6 +2,7 @@
   "name": "fastly-compute-proxy",
   "version": "0.4.0",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=24"
   },
@@ -28,7 +29,6 @@
     "globals": "^15.15.0",
     "husky": "^9.1.5",
     "jest": "^30.4.2",
-    "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.63.0"
@@ -40,7 +40,7 @@
   "scripts": {
     "assemble": "js-compute-runtime build/index.js bin/main.wasm",
     "pack": "fastly compute pack --wasm-binary=./bin/main.wasm",
-    "build": "ts-node build.ts && fastly compute metadata --enable && pnpm run assemble && pnpm run pack",
+    "build": "node build.ts && fastly compute metadata --enable && pnpm run assemble && pnpm run pack",
     "artifact:create": "fastly compute build",
     "deploy": "fastly compute publish",
     "dev": "fastly compute serve",
@@ -49,10 +49,10 @@
     "prepare": "husky",
     "lint": "eslint --max-warnings 0 src/",
     "lint:fix": "pnpm lint --fix",
-    "ci": "ts-node --transpile-only scripts/ci.ts",
-    "test:mock-e2e": "ts-node scripts/mockTests.ts",
-    "test": "jest --config jest.config.js",
-    "test:coverage": "jest --coverage --config jest.config.js",
+    "ci": "node scripts/ci.ts",
+    "test:mock-e2e": "node scripts/mockTests.ts",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
     "test:dts": "echo \"No type tests introduced\" && exit 0"
   },
   "lint-staged": {
