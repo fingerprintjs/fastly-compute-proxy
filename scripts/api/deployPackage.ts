@@ -1,4 +1,4 @@
-import { createClient } from '../utils/createClient'
+import { createClient } from '../utils/createClient.ts'
 import * as fs from 'fs'
 
 export async function deployPackage(service_id: string, versionId: number) {

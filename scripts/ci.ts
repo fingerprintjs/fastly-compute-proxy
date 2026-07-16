@@ -1,7 +1,7 @@
-import { createService } from './api/createService'
-import { createVersion } from './api/createVersion'
-import { deployPackage } from './api/deployPackage'
-import { activateVersion } from './api/activateVersion'
+import { createService } from './api/createService.ts'
+import { createVersion } from './api/createVersion.ts'
+import { deployPackage } from './api/deployPackage.ts'
+import { activateVersion } from './api/activateVersion.ts'
 
 async function main() {
   const SERVICE_NAME = process.env.SERVICE_NAME as string

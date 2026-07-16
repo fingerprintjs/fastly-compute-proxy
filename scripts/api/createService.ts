@@ -1,6 +1,6 @@
-import { createClient } from '../utils/createClient'
-import { activateVersion } from './activateVersion'
-import { deployPackage } from './deployPackage'
+import { createClient } from '../utils/createClient.ts'
+import { activateVersion } from './activateVersion.ts'
+import { deployPackage } from './deployPackage.ts'
 
 const STORE_NAME_PREFIX = process.env.STORE_NAME_PREFIX ?? 'E2ETest'
 
