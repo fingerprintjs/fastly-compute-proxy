@@ -46,9 +46,9 @@ jobs:
           truncated=$(echo "$branch" | cut -c1-37 | sed 's/-$//')
           echo SUBDOMAIN=mock-${truncated}-${hash} >> $GITHUB_OUTPUT
       - name: Set up Fastly CLI
-        uses: fastly/compute-actions/setup@v8
+        uses: fastly/compute-actions/setup@v14
       - name: Package Fastly WASM File
-        uses: fastly/compute-actions/build@v8
+        uses: fastly/compute-actions/build@v14
         with:
           verbose: true
         env:
