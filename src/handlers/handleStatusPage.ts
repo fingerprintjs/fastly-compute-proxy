@@ -7,7 +7,7 @@ import {
   getResultPathVarName,
   proxySecretVarName,
 } from '../env'
-import packageJson from '../../package.json'
+import packageJson from '../../package.json' with { type: 'json' }
 import { env } from 'fastly:env'
 import { Backend } from 'fastly:backend'
 
