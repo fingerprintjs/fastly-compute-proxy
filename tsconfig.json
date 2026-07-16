@@ -12,7 +12,8 @@
     "rootDir": ".",
     "outDir": "./build",
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "./build.ts",
