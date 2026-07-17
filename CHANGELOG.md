@@ -1,3 +1,9 @@
+## 0.4.1
+
+### Patch Changes
+
+- Upgrade esbuild from 0.24 to 0.28 and @fastly/js-compute from 3.42 to 3.43. Both changes affect the built WASM artifact. ([09a16c1](https://github.com/fingerprintjs/fastly-compute-proxy/commit/09a16c19cf28954e72fd84d54e9516303ece0d23))
+
 ## 0.4.0
 
 ### Minor Changes
@@ -16,8 +22,7 @@
 - Add `@fingerprint/node-sdk` support to the plugin system. Plugins now receive either a V3 `EventResponse` or V4 `Event` depending on the API response format. Use the exported `isV4Event` type guard and `getEventId` helper to work with both versions. ([1f75fcf](https://github.com/fingerprintjs/fastly-compute-proxy/commit/1f75fcfb5a72ec06f26a0ddd4104e0854b36d788))
 - Add JS Agent V4 support via a catch-all default route. All unmatched requests are now forwarded to the API origin instead of returning 404. V3 routes are now conditionally registered and take priority over the catch-all.
 
-  > [!NOTE]
-  > This change adds support for Fingerprint [JavaScript agent v4](https://docs.fingerprint.com/reference/js-agent-v4). Compatibility with JavaScript agent v3 is maintained, you can upgrade to the latest JavaScript agent at your convenience.
+  > [!NOTE] This change adds support for Fingerprint [JavaScript agent v4](https://docs.fingerprint.com/reference/js-agent-v4). Compatibility with JavaScript agent v3 is maintained, you can upgrade to the latest JavaScript agent at your convenience.
   >
   > When upgrading to the JavaScript agent v4, remove the `scriptUrlPattern` and `endpoint` options. Replace them with a single `endpoints` option pointing to your Fastly Compute proxy integration domain:
   >
@@ -38,8 +43,7 @@
 
 - Migrate V3 agent download from `fpcdn.io` to the regional API origin. The `fpcdn.io` backend is no longer used and can be safely removed from the Fastly Compute service dashboard.
 
-  > [!TIP]
-  > The `fpcdn.io` backend is no longer used. You can safely remove it from your Fastly Compute service dashboard. ([585cfc9](https://github.com/fingerprintjs/fastly-compute-proxy/commit/585cfc9c69e56fed10368de0305c705991643506))
+  > [!TIP] The `fpcdn.io` backend is no longer used. You can safely remove it from your Fastly Compute service dashboard. ([585cfc9](https://github.com/fingerprintjs/fastly-compute-proxy/commit/585cfc9c69e56fed10368de0305c705991643506))
 
 ### Patch Changes
 
