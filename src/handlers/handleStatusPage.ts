@@ -7,7 +7,7 @@ import {
   getResultPathVarName,
   proxySecretVarName,
 } from '../env'
-import packageJson from '../../package.json'
+import packageJson from '../../package.json' with { type: 'json' }
 import { env } from 'fastly:env'
 import { Backend } from 'fastly:backend'
 
@@ -200,7 +200,7 @@ function buildBody(env: IntegrationEnv, styleNonce: string): string {
   return body
 }
 
-export async function handleStatusPage(request: Request, env: IntegrationEnv): Promise<Response> {
+export function handleStatusPage(request: Request, env: IntegrationEnv): Response {
   if (request.method !== 'GET') {
     return new Response(null, { status: 405 })
   }

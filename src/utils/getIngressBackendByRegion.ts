@@ -15,6 +15,7 @@ export function getIngressBackendByRegion(url: URL) {
       return 'eu.api.fpjs.io'
     case 'ap':
       return 'ap.api.fpjs.io'
+    case null:
     case 'us':
     default:
       return 'api.fpjs.io'

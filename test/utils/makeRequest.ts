@@ -5,6 +5,7 @@ export const makeRequest = (url: URL, init?: RequestInit): FetchEvent => {
     server: mockServerInfo,
     waitUntil() {},
     respondWith(): void {},
+    sendEarlyHints(): void {},
   }
 }
 
@@ -34,8 +35,12 @@ const mockClientInfo: ClientInfo = {
   tlsClientCertificate: new ArrayBuffer(0),
   tlsClientHello: new ArrayBuffer(0),
   tlsJA3MD5: 'test',
+  tlsJA4: 'test',
   tlsProtocol: 'test',
   tlsCipherOpensslName: 'test',
+  h2Fingerprint: 'test',
+  ohFingerprint: 'test',
+  requestId: 'test',
 }
 const mockServerInfo: ServerInfo = {
   address: 'test',

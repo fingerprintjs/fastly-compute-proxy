@@ -15,7 +15,7 @@ jobs:
       version-command: pnpm exec changeset version
       publish-command: pnpm exec changeset publish
       language: node
-      language-version: 20
+      language-version: 24
       prepare-command: pnpm build
       github-release-files: "pkg/fingerprint-fastly-compute-proxy-integration.tar.gz"
     secrets:

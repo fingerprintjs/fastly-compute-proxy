@@ -1,4 +1,4 @@
-import { createClient } from '../utils/createClient'
+import { createClient } from '../utils/createClient.ts'
 
 export function activateVersion(service_id: string, versionId: number) {
   return createClient('version').activateServiceVersion({

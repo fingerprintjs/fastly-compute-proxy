@@ -12,7 +12,7 @@ jobs:
     outputs:
       NEED_TO_RUN_TESTS: ${{ steps.changes.outputs.changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: changes
         uses: fingerprintjs/dx-team-toolkit/.github/actions/paths-changed@v1
         with:
@@ -29,14 +29,11 @@ jobs:
     needs: check-changed-files
     if: needs['check-changed-files'].outputs.NEED_TO_RUN_TESTS == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: 'Install pnpm'
-        uses: pnpm/action-setup@129abb77bf5884e578fcaf1f37628e41622cc371
-        with:
-          cache: 'pnpm'
-          version: 8
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Install node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
       - name: Install dependencies
@@ -49,9 +46,9 @@ jobs:
           truncated=$(echo "$branch" | cut -c1-37 | sed 's/-$//')
           echo SUBDOMAIN=mock-${truncated}-${hash} >> $GITHUB_OUTPUT
       - name: Set up Fastly CLI
-        uses: fastly/compute-actions/setup@v8
+        uses: fastly/compute-actions/setup@v14
       - name: Package Fastly WASM File
-        uses: fastly/compute-actions/build@v8
+        uses: fastly/compute-actions/build@v14
         with:
           verbose: true
         env:

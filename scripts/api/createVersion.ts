@@ -1,4 +1,4 @@
-import { createClient } from '../utils/createClient'
+import { createClient } from '../utils/createClient.ts'
 
 export async function createVersion(service_id: string, versionToClone?: number) {
   if (!versionToClone) {

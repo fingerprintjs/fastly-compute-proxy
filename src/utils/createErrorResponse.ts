@@ -3,7 +3,7 @@ export interface FPJSResponse {
   notifications?: Notification[]
   requestId: string
   error?: ErrorData
-  products: {}
+  products: object
 }
 
 export interface Notification {
@@ -16,10 +16,10 @@ export interface ErrorData {
   message: string
 }
 
-function errorToString(error: string | Error | unknown): string {
+function errorToString(error: unknown): string {
   try {
     return typeof error === 'string' ? error : error instanceof Error ? error.message : String(error)
-  } catch (e) {
+  } catch {
     return 'unknown'
   }
 }
@@ -40,10 +40,10 @@ function generateRequestUniqueId(): string {
 function generateRequestId(): string {
   const uniqueId = generateRequestUniqueId()
   const now = new Date().getTime()
-  return `${now}.${uniqueId}`
+  return `${now.toString()}.${uniqueId}`
 }
 
-export function createErrorResponseForIngress(request: Request, error: string | Error | unknown): Response {
+export function createErrorResponseForIngress(request: Request, error: unknown): Response {
   const reason = errorToString(error)
   const errorBody: ErrorData = {
     code: 'IntegrationFailed',
@@ -55,7 +55,7 @@ export function createErrorResponseForIngress(request: Request, error: string | 
     requestId: generateRequestId(),
     products: {},
   }
-  const requestOrigin = request.headers.get('origin') || '*'
+  const requestOrigin = request.headers.get('origin') ?? '*'
   const responseHeaders: HeadersInit = {
     'Access-Control-Allow-Origin': requestOrigin,
     'Access-Control-Allow-Credentials': 'true',
@@ -65,11 +65,11 @@ export function createErrorResponseForIngress(request: Request, error: string | 
   return new Response(JSON.stringify(responseBody), { status: 500, headers: responseHeaders })
 }
 
-export function createFallbackErrorResponse(request: Request, error: string | Error | unknown): Response {
+export function createFallbackErrorResponse(request: Request, error: unknown): Response {
   const reason = errorToString(error)
   const responseBody = { error: reason }
   console.log(`Error occurred, reason:`, reason)
-  const requestOrigin = request.headers.get('origin') || '*'
+  const requestOrigin = request.headers.get('origin') ?? '*'
   const responseHeaders: HeadersInit = {
     'Access-Control-Allow-Origin': requestOrigin,
     'Access-Control-Allow-Credentials': 'true',

@@ -2,15 +2,18 @@
   "extends": "./node_modules/@fingerprintjs/tsconfig-dx-team/tsconfig.json",
   "compilerOptions": {
     "strict": true,
-    "module": "es2020",
+    "module": "esnext",
     "target": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "customConditions": ["fastly"],
     "esModuleInterop": true,
     "lib": [ "es2022" ],
+    "types": [ "node", "jest" ],
     "rootDir": ".",
     "outDir": "./build",
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "./build.ts",
@@ -18,11 +21,5 @@
     "./scripts/**/*.ts",
     "./test/**/*.ts",
   ],
-  "exclude": ["node_modules"],
-  "ts-node": {
-    "experimentalSpecifierResolution": "node",
-    "compilerOptions": {
-      "module": "CommonJS"
-    },
-  }
+  "exclude": ["node_modules"]
 }

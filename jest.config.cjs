@@ -1,9 +1,9 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} **/
+/** @type {import('jest').Config} **/
 module.exports = {
   testRegex: '/test/.+test.ts?$',
   testEnvironment: 'node',
   passWithNoTests: true,
   collectCoverageFrom: ['./src/**/*.ts'],
   coverageReporters: ['lcov', 'json-summary', ['text', { file: 'coverage.txt', path: './' }]],
-  setupFiles: ['./jest.setup.js'],
+  setupFiles: ['./jest.setup.cjs'],
 }

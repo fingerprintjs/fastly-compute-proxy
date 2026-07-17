@@ -1,4 +1,4 @@
-import packageJson from '../../package.json'
+import packageJson from '../../package.json' with { type: 'json' }
 const INT_VERSION = packageJson.version
 const PARAM_NAME = 'ii'
 
