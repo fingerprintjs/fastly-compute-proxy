@@ -13,22 +13,12 @@ jobs:
       DD_API_KEY: ${{ secrets.INTEGRATIONS_DATADOG_API_KEY }}
 
   build-and-test-e2e-mock:
-    runs-on: ubuntu-latest
-    name: Test e2e for PR using mock app
-    steps:
-      - uses: actions/checkout@v7
-      - name: 'Install pnpm'
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - name: Install node
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: '.node-version'
-      - name: Install dependencies
-        run: pnpm install
-      - name: Run test
-        run: pnpm test:mock-e2e
-        env:
-          MOCK_WARDEN_DOMAIN: ${{secrets.MOCK_WARDEN_DOMAIN}}
-          MOCK_API_URL: 'https://${{secrets.FPJS_FASTLY_MOCK_TEST_DOMAIN}}'
-          MOCK_RESULT_PATH: ${{secrets.MOCK_RESULT_PATH}}
-          MOCK_AGENT_PATH: ${{secrets.MOCK_AGENT_PATH}}
+    name: Test e2e using mock app
+    uses: ./.github/workflows/mock-e2e.yml
+    # The URL is built from a secret, and the `secrets` context is unavailable in `with:`,
+    # so it is passed through the INTEGRATION_URL secret instead.
+    secrets:
+      INTEGRATION_URL: 'https://${{ secrets.FPJS_FASTLY_MOCK_TEST_DOMAIN }}'
+      MOCK_WARDEN_DOMAIN: ${{ secrets.MOCK_WARDEN_DOMAIN }}
+      MOCK_RESULT_PATH: ${{ secrets.MOCK_RESULT_PATH }}
+      MOCK_AGENT_PATH: ${{ secrets.MOCK_AGENT_PATH }}

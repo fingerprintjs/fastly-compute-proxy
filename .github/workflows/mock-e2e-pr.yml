@@ -23,11 +23,19 @@ jobs:
       - name: Print decision
         run: |
           echo "NEED_TO_RUN_TESTS=${{ steps.changes.outputs.changed }}"
-  build-and-test-e2e-mock:
+
+  deploy-preview:
     runs-on: ubuntu-latest
-    name: Test e2e for PR using mock app
+    name: Deploy PR preview service
     needs: check-changed-files
     if: needs['check-changed-files'].outputs.NEED_TO_RUN_TESTS == 'true'
+    concurrency:
+      # Shared with mock-e2e-pr-cleanup.yml. Also serializes two pushes to the same PR, which
+      # would otherwise race on the same preview service.
+      group: fastly-preview-${{ github.head_ref }}
+      cancel-in-progress: false
+    outputs:
+      integration-url: ${{ steps.extract-branch.outputs.INTEGRATION_URL }}
     steps:
       - uses: actions/checkout@v7
       - name: 'Install pnpm'
@@ -44,7 +52,9 @@ jobs:
           branch=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}} | perl -pe 's/[^a-zA-Z0-9]+/-/g and s/-+$//g' | tr '[:upper:]' '[:lower:]')
           hash=$(echo "$branch" | cksum | awk '{printf "%08x", $1}')
           truncated=$(echo "$branch" | cut -c1-37 | sed 's/-$//')
-          echo SUBDOMAIN=mock-${truncated}-${hash} >> $GITHUB_OUTPUT
+          subdomain=mock-${truncated}-${hash}
+          echo SUBDOMAIN=${subdomain} >> $GITHUB_OUTPUT
+          echo INTEGRATION_URL=https://fpjs-fastly-${subdomain}.edgecompute.app >> $GITHUB_OUTPUT
       - name: Set up Fastly CLI
         uses: fastly/compute-actions/setup@v14
       - name: Package Fastly WASM File
@@ -61,14 +71,18 @@ jobs:
           FASTLY_API_TOKEN: ${{secrets.FASTLY_API_TOKEN}}
           FPJS_BACKEND_URL: ${{secrets.MOCK_WARDEN_DOMAIN}}
           STORE_NAME_PREFIX: "E2ETest"
+          # Blocks until the preview service's own status page reports the version we just
+          # activated, replacing a fixed sleep. A real deploy measured ~55s of propagation.
+          STATUS_URL: "${{ steps.extract-branch.outputs.INTEGRATION_URL }}/status"
         run: pnpm run ci
-      - name: Wait for 60s
-        shell: bash
-        run: sleep 60s
-      - name: Run test
-        run: pnpm test:mock-e2e
-        env:
-          MOCK_WARDEN_DOMAIN: ${{secrets.MOCK_WARDEN_DOMAIN}}
-          MOCK_API_URL: 'https://fpjs-fastly-${{steps.extract-branch.outputs.SUBDOMAIN}}.edgecompute.app'
-          MOCK_RESULT_PATH: ${{secrets.MOCK_RESULT_PATH}}
-          MOCK_AGENT_PATH: ${{secrets.MOCK_AGENT_PATH}}
+
+  mock-e2e:
+    name: Test e2e for PR using mock app
+    needs: [check-changed-files, deploy-preview]
+    uses: ./.github/workflows/mock-e2e.yml
+    with:
+      integration-url: ${{ needs.deploy-preview.outputs.integration-url }}
+    secrets:
+      MOCK_WARDEN_DOMAIN: ${{ secrets.MOCK_WARDEN_DOMAIN }}
+      MOCK_RESULT_PATH: ${{ secrets.MOCK_RESULT_PATH }}
+      MOCK_AGENT_PATH: ${{ secrets.MOCK_AGENT_PATH }}

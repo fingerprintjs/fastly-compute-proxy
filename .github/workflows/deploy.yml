@@ -1,0 +1,92 @@
+name: Deploy to Fastly Compute
+
+# Releases are the only deploy trigger: what runs on Fastly is always the exact artifact
+# attached to a published GitHub Release, byte-identical to what customers download.
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    name: Deploy release to Fastly
+    # Pre-releases (rc, beta) are published but never deployed.
+    if: github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      # Never let two deploys race on the same Fastly service.
+      group: fastly-deploy-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    outputs:
+      e2e-url: ${{ steps.e2e-target.outputs.url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+      - name: Install node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download release package
+        id: download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          rm -rf pkg && mkdir -p pkg
+          gh release download "$RELEASE_TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern '*.tar.gz' \
+            --dir pkg
+          # pkg/ was just emptied, so the only .tar.gz here is the release asset.
+          count=$(find pkg -maxdepth 1 -type f -name '*.tar.gz' | wc -l | tr -d ' ')
+          if [ "$count" -ne 1 ]; then
+            echo "Expected exactly one .tar.gz asset on $RELEASE_TAG, found $count" >&2
+            ls -la pkg >&2
+            exit 1
+          fi
+          echo "package-path=$(find pkg -maxdepth 1 -type f -name '*.tar.gz')" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Fastly
+        env:
+          FASTLY_API_TOKEN: ${{ secrets.FASTLY_API_TOKEN }}
+          FASTLY_SERVICE_ID: ${{ vars.FASTLY_SERVICE_ID }}
+          PACKAGE_PATH: ${{ steps.download.outputs.package-path }}
+          # When set, the deploy blocks until this status page reports the new service version.
+          STATUS_URL: ${{ vars.STATUS_URL }}
+        run: |
+          set -euo pipefail
+          echo "Deploying $PACKAGE_PATH"
+          pnpm run deploy:service
+
+      - name: Publish E2E target
+        id: e2e-target
+        env:
+          E2E_URL: ${{ vars.E2E_INTEGRATION_URL }}
+        run: echo "url=$E2E_URL" >> "$GITHUB_OUTPUT"
+
+  # Separate job so a test failure reads as "the release shipped but the integration is broken",
+  # not "the deploy failed". Starts only after the rollout wait inside `deploy` confirmed the new
+  # version is live, so it always exercises the version we just activated.
+  mock-e2e:
+    name: Verify with mock E2E
+    needs: deploy
+    if: needs.deploy.outputs.e2e-url != ''
+    uses: ./.github/workflows/mock-e2e.yml
+    with:
+      integration-url: ${{ needs.deploy.outputs.e2e-url }}
+    secrets:
+      MOCK_WARDEN_DOMAIN: ${{ secrets.MOCK_WARDEN_DOMAIN }}
+      MOCK_RESULT_PATH: ${{ secrets.MOCK_RESULT_PATH }}
+      MOCK_AGENT_PATH: ${{ secrets.MOCK_AGENT_PATH }}
