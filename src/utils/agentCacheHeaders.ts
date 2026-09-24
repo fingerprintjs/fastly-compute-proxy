@@ -1,20 +1,21 @@
 function isSharedMaxAge(directive: string): boolean {
-  return directive.trim().toLowerCase().startsWith('s-maxage')
+  const [name] = directive.split('=')
+  return name.trim().toLowerCase() === 's-maxage'
 }
 
-function removeWeakPrefix(tag: string): string {
-  const trimmedTag = tag.trim()
-  return trimmedTag.startsWith('W/') ? trimmedTag.slice(2) : trimmedTag
+// Entity tags are quoted, so every odd part between quotes is an opaque tag, even if it contains commas.
+// The weak `W/` prefix stays outside the quotes, which gives the weak comparison If-None-Match requires (RFC 9110).
+function getOpaqueTags(header: string): string[] {
+  return header.split('"').filter((_, index) => index % 2 === 1)
 }
 
-// Weak comparison, as required for If-None-Match (RFC 9110)
 function matchesIfNoneMatch(ifNoneMatch: string, etag: string): boolean {
   if (ifNoneMatch.trim() === '*') {
     return true
   }
 
-  const expectedTag = removeWeakPrefix(etag)
-  return ifNoneMatch.split(',').some((tag) => removeWeakPrefix(tag) === expectedTag)
+  const requestedTags = getOpaqueTags(ifNoneMatch)
+  return getOpaqueTags(etag).some((tag) => requestedTags.includes(tag))
 }
 
 /**

@@ -80,8 +80,8 @@ describe('Download Script', () => {
       age: '2',
     }
 
-    function mockBackendResponse(cached: boolean) {
-      const response = new Response('agent', { headers: upstreamHeaders })
+    function mockBackendResponse(cached: boolean, headers: Record<string, string> = {}, status = 200) {
+      const response = new Response('agent', { status, headers: { ...upstreamHeaders, ...headers } })
       Object.defineProperty(response, 'cached', { value: cached })
       jest.mocked(fetch).mockResolvedValueOnce(response)
     }
@@ -127,6 +127,43 @@ describe('Download Script', () => {
       )
 
       expect(response.status).toBe(304)
+    })
+
+    it('with If-None-Match tag containing a comma: returns 304', async () => {
+      mockBackendResponse(true, { etag: 'W/"build,123"' })
+      const response = await handleRequest(
+        makeRequest(new URL('https://test/download?apiKey=apiKey'), { headers: { 'If-None-Match': '"build,123"' } })
+      )
+
+      expect(response.status).toBe(304)
+    })
+
+    it('with matching If-None-Match on other methods: returns 412', async () => {
+      mockBackendResponse(true)
+      const response = await handleRequest(
+        makeRequest(new URL('https://test/download?apiKey=apiKey'), {
+          method: 'POST',
+          headers: { 'If-None-Match': '"abc"' },
+        })
+      )
+
+      expect(response.status).toBe(412)
+    })
+
+    it('with matching If-None-Match on upstream error: keeps the error', async () => {
+      mockBackendResponse(true, {}, 404)
+      const response = await handleRequest(
+        makeRequest(new URL('https://test/download?apiKey=apiKey'), { headers: { 'If-None-Match': '"abc"' } })
+      )
+
+      expect(response.status).toBe(404)
+    })
+
+    it('keeps directives that only start with s-maxage', async () => {
+      mockBackendResponse(false, { 'cache-control': 'public, s-maxage=10, s-maxage-policy=private' })
+      const response = await handleRequest(makeRequest(new URL('https://test/download?apiKey=apiKey')))
+
+      expect(response.headers.get('cache-control')).toBe('public, s-maxage-policy=private')
     })
 
     it('with non-matching If-None-Match: returns 200', async () => {
