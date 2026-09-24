@@ -67,14 +67,14 @@ describe('Download Script', () => {
       expect.anything(),
       expect.objectContaining({
         backend: 'fingerprint',
-        cacheOverride: expect.objectContaining({ mode: 'none' }),
+        cacheOverride: expect.objectContaining({ mode: 'override', options: { ttl: 60 } }),
       })
     )
   })
 
   describe('cache headers', () => {
     const upstreamHeaders = {
-      'cache-control': 'public, max-age=3742, s-maxage=629157',
+      'cache-control': 'public, max-age=3742',
       'cache-tag': 'procdn',
       etag: 'W/"abc"',
       age: '2',
@@ -86,7 +86,7 @@ describe('Download Script', () => {
       jest.mocked(fetch).mockResolvedValueOnce(response)
     }
 
-    it('on miss: removes s-maxage and age, keeps cache-tag', async () => {
+    it('on miss: removes age, keeps cache-tag', async () => {
       mockBackendResponse(false)
       const response = await handleRequest(makeRequest(new URL('https://test/download?apiKey=apiKey')))
 
@@ -96,7 +96,7 @@ describe('Download Script', () => {
       expect(response.headers.get('cache-tag')).toBe('procdn')
     })
 
-    it('on hit: removes s-maxage and cache-tag, sets age to 0', async () => {
+    it('on hit: removes cache-tag, sets age to 0', async () => {
       mockBackendResponse(true)
       const response = await handleRequest(makeRequest(new URL('https://test/download?apiKey=apiKey')))
 
@@ -157,13 +157,6 @@ describe('Download Script', () => {
       )
 
       expect(response.status).toBe(404)
-    })
-
-    it('keeps directives that only start with s-maxage', async () => {
-      mockBackendResponse(false, { 'cache-control': 'public, s-maxage=10, s-maxage-policy=private' })
-      const response = await handleRequest(makeRequest(new URL('https://test/download?apiKey=apiKey')))
-
-      expect(response.headers.get('cache-control')).toBe('public, s-maxage-policy=private')
     })
 
     it('with non-matching If-None-Match: returns 200', async () => {

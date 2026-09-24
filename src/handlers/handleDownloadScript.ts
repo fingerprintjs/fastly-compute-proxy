@@ -13,8 +13,7 @@ async function makeDownloadScriptRequest(request: Request): Promise<Response> {
 
   const backend = getIngressBackendByRegion(url)
   console.log(`Downloading script from ${backend} ${url.toString()}...`)
-  // Edge TTL follows the upstream cache headers (s-maxage)
-  const cache = new CacheOverride('none')
+  const cache = new CacheOverride('override', { ttl: 60 })
   const response = await fetch(newRequest, { backend, cacheOverride: cache })
 
   return applyAgentCacheHeaders(request, response)
