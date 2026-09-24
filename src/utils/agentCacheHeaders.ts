@@ -42,8 +42,9 @@ export function applyAgentCacheHeaders(request: Request, response: Response): Re
 
   const etag = response.headers.get('etag')
   const ifNoneMatch = request.headers.get('if-none-match')
-  if (etag !== null && ifNoneMatch !== null && matchesIfNoneMatch(ifNoneMatch, etag)) {
-    return new Response(null, { status: 304, headers: response.headers })
+  if (response.ok && etag !== null && ifNoneMatch !== null && matchesIfNoneMatch(ifNoneMatch, etag)) {
+    const status = request.method === 'GET' || request.method === 'HEAD' ? 304 : 412
+    return new Response(null, { status, headers: response.headers })
   }
 
   return response
