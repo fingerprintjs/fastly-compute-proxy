@@ -1,8 +1,9 @@
 import { createFallbackErrorResponse, getAgentScriptPath } from '../utils'
 import { CacheOverride } from 'fastly:cache-override'
 import { getIngressBackendByRegion } from '../utils/getIngressBackendByRegion'
+import { applyAgentCacheHeaders } from '../utils/agentCacheHeaders'
 
-function makeDownloadScriptRequest(request: Request): Promise<Response> {
+async function makeDownloadScriptRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
   url.pathname = getAgentScriptPath(url.searchParams)
 
@@ -13,7 +14,9 @@ function makeDownloadScriptRequest(request: Request): Promise<Response> {
   const backend = getIngressBackendByRegion(url)
   console.log(`Downloading script from ${backend} ${url.toString()}...`)
   const cache = new CacheOverride('override', { ttl: 60 })
-  return fetch(newRequest, { backend, cacheOverride: cache })
+  const response = await fetch(newRequest, { backend, cacheOverride: cache })
+
+  return applyAgentCacheHeaders(request, response)
 }
 
 export async function handleDownloadScript(request: Request): Promise<Response> {
