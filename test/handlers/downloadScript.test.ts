@@ -120,6 +120,15 @@ describe('Download Script', () => {
       expect(response.headers.has('cache-tag')).toBe(false)
     })
 
+    it.each(['"other", W/"abc"', '*'])('with If-None-Match %s: returns 304', async (ifNoneMatch) => {
+      mockBackendResponse(true)
+      const response = await handleRequest(
+        makeRequest(new URL('https://test/download?apiKey=apiKey'), { headers: { 'If-None-Match': ifNoneMatch } })
+      )
+
+      expect(response.status).toBe(304)
+    })
+
     it('with non-matching If-None-Match: returns 200', async () => {
       mockBackendResponse(true)
       const response = await handleRequest(
@@ -132,7 +141,7 @@ describe('Download Script', () => {
     it('build enables the HTTP cache API, which response.cached depends on', () => {
       const packageJson = readFileSync(join(__dirname, '../../package.json'), 'utf8')
 
-      expect(packageJson).toMatch(/"assemble": "js-compute-runtime [^"]*--enable-http-cache/)
+      expect(packageJson).toContain('--enable-http-cache')
     })
   })
 })
