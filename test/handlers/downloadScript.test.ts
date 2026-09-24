@@ -2,6 +2,8 @@ import { beforeAll, beforeEach, describe, expect } from '@jest/globals'
 import { ConfigStore } from 'fastly:config-store'
 import { makeRequest } from '../utils/makeRequest'
 import { handleRequest } from '../../src'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 describe('Download Script', () => {
   let receivedUrl: string
@@ -65,8 +67,72 @@ describe('Download Script', () => {
       expect.anything(),
       expect.objectContaining({
         backend: 'fingerprint',
-        cacheOverride: expect.objectContaining({ mode: 'override', options: { ttl: 60 } }),
+        cacheOverride: expect.objectContaining({ mode: 'none' }),
       })
     )
+  })
+
+  describe('cache headers', () => {
+    const upstreamHeaders = {
+      'cache-control': 'public, max-age=3742, s-maxage=629157',
+      'cache-tag': 'procdn',
+      etag: 'W/"abc"',
+      age: '2',
+    }
+
+    function mockBackendResponse(cached: boolean) {
+      const response = new Response('agent', { headers: upstreamHeaders })
+      Object.defineProperty(response, 'cached', { value: cached })
+      jest.mocked(fetch).mockResolvedValueOnce(response)
+    }
+
+    it('on miss: removes s-maxage and age, keeps cache-tag', async () => {
+      mockBackendResponse(false)
+      const response = await handleRequest(makeRequest(new URL('https://test/download?apiKey=apiKey')))
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('cache-control')).toBe('public, max-age=3742')
+      expect(response.headers.has('age')).toBe(false)
+      expect(response.headers.get('cache-tag')).toBe('procdn')
+    })
+
+    it('on hit: removes s-maxage and cache-tag, sets age to 0', async () => {
+      mockBackendResponse(true)
+      const response = await handleRequest(makeRequest(new URL('https://test/download?apiKey=apiKey')))
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('cache-control')).toBe('public, max-age=3742')
+      expect(response.headers.get('age')).toBe('0')
+      expect(response.headers.has('cache-tag')).toBe(false)
+    })
+
+    it('on hit with matching If-None-Match: returns 304 with the same cache headers', async () => {
+      mockBackendResponse(true)
+      const response = await handleRequest(
+        makeRequest(new URL('https://test/download?apiKey=apiKey'), { headers: { 'If-None-Match': '"abc"' } })
+      )
+
+      expect(response.status).toBe(304)
+      expect(await response.text()).toBe('')
+      expect(response.headers.get('cache-control')).toBe('public, max-age=3742')
+      expect(response.headers.get('age')).toBe('0')
+      expect(response.headers.get('etag')).toBe('W/"abc"')
+      expect(response.headers.has('cache-tag')).toBe(false)
+    })
+
+    it('with non-matching If-None-Match: returns 200', async () => {
+      mockBackendResponse(true)
+      const response = await handleRequest(
+        makeRequest(new URL('https://test/download?apiKey=apiKey'), { headers: { 'If-None-Match': '"other"' } })
+      )
+
+      expect(response.status).toBe(200)
+    })
+
+    it('build enables the HTTP cache API, which response.cached depends on', () => {
+      const packageJson = readFileSync(join(__dirname, '../../package.json'), 'utf8')
+
+      expect(packageJson).toMatch(/"assemble": "js-compute-runtime [^"]*--enable-http-cache/)
+    })
   })
 })
