@@ -14,8 +14,9 @@ function matchesIfNoneMatch(ifNoneMatch: string, etag: string): boolean {
 }
 
 /**
- * - On a cache hit, `age` is reset to 0 so browsers keep the agent for the full `max-age`, and the upstream
- *   `cache-tag` is removed.
+ * - On a cache hit, `age` is reset to 0 and `date` is refreshed so browsers keep the agent for the full
+ *   `max-age`, and the upstream `cache-tag` is removed. Fastly serves the stored response as-is on a hit, so
+ *   `date` stays frozen at the time the response was cached; we overwrite it to keep it consistent with `age: 0`.
  * - On a cache miss, the upstream CDN's `age` is removed and `cache-tag` is kept.
  * - With the HTTP cache API on, the Compute cache serves hits as-is, so `If-None-Match` is evaluated here.
  *
@@ -24,6 +25,7 @@ function matchesIfNoneMatch(ifNoneMatch: string, etag: string): boolean {
 export function applyAgentCacheHeaders(request: Request, response: Response): Response {
   if (response.cached === true) {
     response.headers.set('age', '0')
+    response.headers.set('date', new Date().toUTCString())
     response.headers.delete('cache-tag')
   } else {
     response.headers.delete('age')

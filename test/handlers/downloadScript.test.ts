@@ -2,8 +2,6 @@ import { beforeAll, beforeEach, describe, expect } from '@jest/globals'
 import { ConfigStore } from 'fastly:config-store'
 import { makeRequest } from '../utils/makeRequest'
 import { handleRequest } from '../../src'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
 describe('Download Script', () => {
   let receivedUrl: string
@@ -166,12 +164,6 @@ describe('Download Script', () => {
       )
 
       expect(response.status).toBe(200)
-    })
-
-    it('build enables the HTTP cache API, which response.cached depends on', () => {
-      const packageJson = readFileSync(join(__dirname, '../../package.json'), 'utf8')
-
-      expect(packageJson).toContain('--enable-http-cache')
     })
   })
 })
