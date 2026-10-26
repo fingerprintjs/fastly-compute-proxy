@@ -1,3 +1,9 @@
+## 0.4.2
+
+### Patch Changes
+
+- Updated agent endpoint response to reset `age` and `date` and drop `cache-tag` on cache hits, and to answer `If-None-Match` with 304 ([c186ae8](https://github.com/fingerprintjs/fastly-compute-proxy/commit/c186ae86e222d5c3a94e1980874b5bcf9a6cc40a))
+
 ## 0.4.1
 
 ### Patch Changes
