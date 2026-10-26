@@ -17,13 +17,9 @@ function matchesIfNoneMatch(ifNoneMatch: string, etag: string): boolean {
 const BODY_HEADERS = ['content-length', 'content-type', 'content-encoding', 'content-language']
 
 /**
- * - On a cache hit, `age` is reset to 0 and `date` is refreshed so browsers keep the agent for the full
- *   `max-age`, and the upstream `cache-tag` is removed. Fastly serves the stored response as-is on a hit, so
- *   `date` stays frozen at the time the response was cached; we overwrite it to keep it consistent with `age: 0`.
- * - On a cache miss, the upstream CDN's `age` is removed and `cache-tag` is kept.
- * - With the HTTP cache API on, the Compute cache serves hits as-is, so `If-None-Match` is evaluated here.
- *
- * `response.cached` requires building with `--enable-http-cache`.
+ * Cache hit: reset `age`/`date` (Fastly serves hits frozen) so browsers get the full `max-age`, drop
+ * upstream `cache-tag`. Cache miss: drop upstream `age`. Hits are served as-is, so `If-None-Match` is
+ * evaluated here. Requires `--enable-http-cache` for `response.cached`.
  */
 export function applyAgentCacheHeaders(request: Request, response: Response): Response {
   if (response.cached === true) {
