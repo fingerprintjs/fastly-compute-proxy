@@ -104,7 +104,7 @@ describe('Download Script', () => {
       expect(response.headers.has('cache-tag')).toBe(false)
     })
 
-    it('on hit with matching If-None-Match: returns 304 with the same cache headers', async () => {
+    it('on hit with matching If-None-Match: returns 304 with cache headers but no body headers', async () => {
       mockBackendResponse(true)
       const response = await handleRequest(
         makeRequest(new URL('https://test/download?apiKey=apiKey'), { headers: { 'If-None-Match': '"abc"' } })
@@ -116,6 +116,8 @@ describe('Download Script', () => {
       expect(response.headers.get('age')).toBe('0')
       expect(response.headers.get('etag')).toBe('W/"abc"')
       expect(response.headers.has('cache-tag')).toBe(false)
+      expect(response.headers.has('content-type')).toBe(false)
+      expect(response.headers.has('content-length')).toBe(false)
     })
 
     it.each(['"other", W/"abc"', '*'])('with If-None-Match %s: returns 304', async (ifNoneMatch) => {

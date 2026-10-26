@@ -13,6 +13,9 @@ function matchesIfNoneMatch(ifNoneMatch: string, etag: string): boolean {
   return getOpaqueTags(etag).some((tag) => requestedTags.includes(tag))
 }
 
+// A 304/412 has no body, so these headers describing one are dropped from it.
+const BODY_HEADERS = ['content-length', 'content-type', 'content-encoding', 'content-language']
+
 /**
  * - On a cache hit, `age` is reset to 0 and `date` is refreshed so browsers keep the agent for the full
  *   `max-age`, and the upstream `cache-tag` is removed. Fastly serves the stored response as-is on a hit, so
@@ -35,7 +38,11 @@ export function applyAgentCacheHeaders(request: Request, response: Response): Re
   const ifNoneMatch = request.headers.get('if-none-match')
   if (response.ok && etag !== null && ifNoneMatch !== null && matchesIfNoneMatch(ifNoneMatch, etag)) {
     const status = request.method === 'GET' || request.method === 'HEAD' ? 304 : 412
-    return new Response(null, { status, headers: response.headers })
+    const headers = new Headers(response.headers)
+    BODY_HEADERS.forEach((name) => {
+      headers.delete(name)
+    })
+    return new Response(null, { status, headers })
   }
 
   return response
