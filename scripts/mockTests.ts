@@ -14,14 +14,16 @@ async function main() {
   const integrationUrl = getEnv('MOCK_API_URL')
   const agentPath = getEnv('MOCK_AGENT_PATH')
   const resultPath = getEnv('MOCK_RESULT_PATH')
+  const region = process.env.MOCK_REGION ?? 'us'
 
   console.info('Agent download path:', agentPath)
   console.info('Get result path:', resultPath)
+  console.info('Region:', region)
 
   console.info(`Running mock e2e tests for`, integrationUrl)
 
   execSync(
-    `npm exec -y "git+https://github.com/fingerprintjs/dx-team-mock-for-proxy-integrations-e2e-tests.git" -- --integration-url="${integrationUrl}" --api-url="https://${mockWardenDomain}" --cdn-path="${agentPath}" --ingress-path="${resultPath}" --traffic-name=fingerprint-pro-fastly-compute --integration-version=${pkg.version} --enable-new-tests=true --exclude=regions`,
+    `npm exec -y "git+https://github.com/fingerprintjs/dx-team-mock-for-proxy-integrations-e2e-tests.git" -- --integration-url="${integrationUrl}" --api-url="https://${mockWardenDomain}" --cdn-path="${agentPath}" --ingress-path="${resultPath}" --traffic-name=fingerprint-pro-fastly-compute --integration-version=${pkg.version} --enable-new-tests=true --region=${region}`,
     {
       stdio: 'inherit',
     }
