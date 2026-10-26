@@ -1,0 +1,48 @@
+name: Cleanup PR preview service
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    name: Delete PR preview service
+    permissions:
+      contents: read
+    concurrency:
+      # Shared with the deploy job in mock-e2e-pr.yml so cleanup can never run while that
+      # PR's preview service is mid-deploy (which would leave a freshly recreated orphan).
+      group: fastly-preview-${{ github.head_ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: 'Install pnpm'
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+      - name: Install node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      # Must stay identical to the same step in mock-e2e-pr.yml, or cleanup would compute a
+      # different name and simply find nothing to delete.
+      - name: Extract Branch Name
+        id: extract-branch
+        run: |
+          branch=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}} | perl -pe 's/[^a-zA-Z0-9]+/-/g and s/-+$//g' | tr '[:upper:]' '[:lower:]')
+          hash=$(echo "$branch" | cksum | awk '{printf "%08x", $1}')
+          truncated=$(echo "$branch" | cut -c1-37 | sed 's/-$//')
+          echo SUBDOMAIN=mock-${truncated}-${hash} >> $GITHUB_OUTPUT
+
+      # Idempotent: a PR that never created a service (or was already cleaned up) is a no-op.
+      - name: Delete preview service and its stores
+        env:
+          SERVICE_NAME: "${{steps.extract-branch.outputs.SUBDOMAIN}}.${{secrets.FPJS_CI_DOMAIN}}"
+          FASTLY_API_TOKEN: ${{secrets.FASTLY_API_TOKEN}}
+          STORE_NAME_PREFIX: "E2ETest"
+        run: pnpm run ci:cleanup

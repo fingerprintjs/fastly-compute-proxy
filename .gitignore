@@ -6,3 +6,7 @@
 /coverage
 .DS_Store
 .vscode/
+
+# Local secrets - never commit
+.env
+.env.local

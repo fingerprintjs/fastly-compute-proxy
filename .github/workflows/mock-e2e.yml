@@ -1,0 +1,66 @@
+name: Mock E2E
+
+# Reusable: the single definition of "run the mock E2E suite against a deployed integration".
+# Callers pass the URL either as an input, or as the INTEGRATION_URL secret when the URL
+# itself is derived from a secret (the `secrets` context is not available in a caller's `with:`).
+on:
+  workflow_call:
+    inputs:
+      integration-url:
+        description: 'Base URL of the deployed integration to test. Takes precedence over the INTEGRATION_URL secret.'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      INTEGRATION_URL:
+        description: 'Fallback for integration-url when the URL is built from a secret.'
+        required: false
+      MOCK_WARDEN_DOMAIN:
+        description: 'Mock warden hostname, without a scheme (mockTests.ts prepends https://).'
+        required: true
+      MOCK_RESULT_PATH:
+        required: true
+      MOCK_AGENT_PATH:
+        required: true
+
+jobs:
+  mock-e2e:
+    name: Run mock E2E tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+      - name: Install node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.node-version'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve integration URL
+        id: target
+        env:
+          INPUT_URL: ${{ inputs.integration-url }}
+          SECRET_URL: ${{ secrets.INTEGRATION_URL }}
+        run: |
+          set -euo pipefail
+          url="${INPUT_URL:-${SECRET_URL:-}}"
+          if [ -z "$url" ]; then
+            echo "Provide either the integration-url input or the INTEGRATION_URL secret." >&2
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Run mock E2E tests
+        env:
+          MOCK_API_URL: ${{ steps.target.outputs.url }}
+          MOCK_WARDEN_DOMAIN: ${{ secrets.MOCK_WARDEN_DOMAIN }}
+          MOCK_RESULT_PATH: ${{ secrets.MOCK_RESULT_PATH }}
+          MOCK_AGENT_PATH: ${{ secrets.MOCK_AGENT_PATH }}
+        run: pnpm test:mock-e2e
