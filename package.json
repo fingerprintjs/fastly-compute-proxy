@@ -38,7 +38,7 @@
     "cookie": "0.7.0"
   },
   "scripts": {
-    "assemble": "js-compute-runtime build/index.js bin/main.wasm",
+    "assemble": "js-compute-runtime --enable-http-cache build/index.js bin/main.wasm",
     "pack": "fastly compute pack --wasm-binary=./bin/main.wasm",
     "build": "node build.ts && fastly compute metadata --enable && pnpm run assemble && pnpm run pack",
     "artifact:create": "fastly compute build",
