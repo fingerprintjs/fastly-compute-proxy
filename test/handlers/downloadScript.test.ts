@@ -102,6 +102,7 @@ describe('Download Script', () => {
       expect(response.headers.get('cache-control')).toBe('public, max-age=3742')
       expect(response.headers.get('age')).toBe('0')
       expect(response.headers.has('cache-tag')).toBe(false)
+      expect(Date.parse(response.headers.get('date') ?? '')).toBeGreaterThan(Date.now() - 5000)
     })
 
     it('on hit with matching If-None-Match: returns 304 with cache headers but no body headers', async () => {
