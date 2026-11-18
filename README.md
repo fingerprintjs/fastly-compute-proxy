@@ -69,6 +69,39 @@ This is a quick overview of the installation setup. For detailed step-by-step in
 
 See the [Fastly Compute proxy integration guide](https://docs.fingerprint.com/docs/fastly-compute-proxy-integration#step-3-configure-the-fingerprint-client-agent-to-use-your-service) in our documentation for more details.
 
+## Deploying with Terraform
+
+You can also deploy the integration with the [Fingerprint Fastly Compute Terraform module](https://github.com/fingerprintjs/terraform-fastly-compute-fingerprint-proxy-integration). The module uploads the latest package from the releases of this repository to your empty Compute service, adds the `fingerprint` backend, and creates the Secret store. You still need to create the empty Compute service first and add `PROXY_SECRET` to the Secret store after the first deploy.
+
+The module uses the `fastly` provider from your configuration, so configure the provider with your Fastly API token:
+
+```terraform
+terraform {
+  required_version = ">=1.5"
+  required_providers {
+    fastly = {
+      source  = "fastly/fastly"
+      version = ">= 7.1.0"
+    }
+  }
+}
+
+provider "fastly" {
+  # To use the FASTLY_API_KEY environment variable instead, leave out api_key.
+  api_key = "FASTLY_API_TOKEN"
+}
+
+module "fingerprint_fastly_compute_integration" {
+  source             = "fingerprintjs/compute-fingerprint-proxy-integration/fastly"
+  version            = "~> 2.0"
+  integration_domain = "metrics.yourwebsite.com"
+  service_id         = "EMPTY_FASTLY_COMPUTE_SERVICE_ID"
+  region             = "us"
+}
+```
+
+For step-by-step instructions and the full list of variables, see [Deploy Fastly Compute Proxy Integration with Terraform](https://docs.fingerprint.com/docs/deploy-fastly-compute-using-terraform). If you use v1 of the module, see [Migrate the Fastly Compute Terraform module from v1 to v2](https://docs.fingerprint.com/docs/fastly-compute-terraform-module-v1-to-v2-migration-guide).
+
 ## Feedback and support
 
 Please reach out to our [Customer Success team](https://fingerprint.com/support/) if run into any issues with the integration.
