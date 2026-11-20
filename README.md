@@ -71,7 +71,7 @@ See the [Fastly Compute proxy integration guide](https://docs.fingerprint.com/do
 
 ## Deploying with Terraform
 
-You can also deploy the integration with the [Fingerprint Fastly Compute Terraform module](https://github.com/fingerprintjs/terraform-fastly-compute-fingerprint-proxy-integration). The module uploads the latest package from the releases of this repository to your empty Compute service, adds the `fingerprint` backend, and creates the Secret store. You still need to create the empty Compute service first and add `PROXY_SECRET` to the Secret store after the first deploy.
+You can also deploy the integration with the [Fingerprint Fastly Compute Terraform module](https://github.com/fingerprintjs/terraform-fastly-compute-fingerprint-proxy-integration). The module uploads the package from the releases of this repository to your empty Compute service, adds the `fingerprint` backend, and creates the Secret store. You still need to create the empty Compute service first and add `PROXY_SECRET` to the Secret store after the first deploy. Each `terraform apply` updates the service to the newest release within the version line the module supports, currently v0.4.x.
 
 The module uses the `fastly` provider from your configuration, so configure the provider with your Fastly API token:
 
